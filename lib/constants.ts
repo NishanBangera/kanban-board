@@ -2,7 +2,7 @@ export const defaultAddTask = {
     title: "",
     tag: "",
     dueDate: "",
-    users: ""
+    user: ""
 }
 
 export const defaultAddSection = {

@@ -1,21 +1,20 @@
-import { createSectionSchema } from "@/lib/validators";
-import { z } from "zod";
-
-export type User = {
-    id: string;
-    image: string;
-    name: string;
-}
+import { userSchema } from "@/lib/validators"
+import { z } from "zod"
 
 export type Task = {
-    id: string;
-    title: string;
-    tag: string;
-    dueDate: string;
-    user: User;
-}
+    id: string,
+    title: string,
+    createdAt: Date,
+    sectionId: string,
+    tag: string,
+    dueDate: Date,
+    user: z.infer<typeof userSchema>,
+    updatedAt: Date
+  }
 
-export type Section = z.infer<typeof createSectionSchema> & {
-    createdAt: boolean
-    tasks: []
+export type StructuredSection = {
+  id: string,
+  title: string,
+  createdAt: Date,
+  tasks: Task[]
 }

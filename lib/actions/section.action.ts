@@ -2,9 +2,12 @@
 
 import { prisma } from "@/db/prisma";
 import { z } from "zod";
-import { createSectionSchema } from "../validators";
+import { addSectionSchema } from "../validators";
 import { revalidatePath } from "next/cache";
 import { convertToPlainObject, formatError } from "../utils";
+import { StructuredSection } from "@/types";
+
+
 
 export async function getAllSections(){
     const data = await prisma.section.findMany({
@@ -12,14 +15,13 @@ export async function getAllSections(){
             tasks: true
         }
     })
-
-    return convertToPlainObject(data)
+    return convertToPlainObject(data as StructuredSection[])
 }
 
 
-export async function addSection(data: z.infer<typeof createSectionSchema>) {
+export async function addSection(data: z.infer<typeof addSectionSchema>) {
   try{
-      const section = createSectionSchema.parse(data)
+      const section = addSectionSchema.parse(data)
       await prisma.section.create({ data: section });
 
       revalidatePath("/")

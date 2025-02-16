@@ -15,7 +15,7 @@ import { Input } from "./ui/input";
 import { defaultAddSection } from "@/lib/constants";
 import { Button } from "./ui/button";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { createSectionSchema } from "@/lib/validators";
+import { addSectionSchema } from "@/lib/validators";
 import { z } from "zod";
 import { useToast } from "@/hooks/use-toast";
 import { addSection } from "@/lib/actions/section.action";
@@ -24,12 +24,12 @@ const AddSection = () => {
   const { toast } = useToast();
 
   const form = useForm({
-    resolver: zodResolver(createSectionSchema),
+    resolver: zodResolver(addSectionSchema),
     defaultValues: defaultAddSection,
   });
 
   // Submit form handler
-  const onSubmit: SubmitHandler<z.infer<typeof createSectionSchema>> = async (
+  const onSubmit: SubmitHandler<z.infer<typeof addSectionSchema>> = async (
     values
   ) => {
     const res = await addSection(values);
