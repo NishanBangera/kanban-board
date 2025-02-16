@@ -1,8 +1,7 @@
-import { Minus } from "lucide-react";
 import TaskCard from "./TaskCard";
-import { Button } from "./ui/button";
 import AddTask from "./AddTask";
 import { StructuredSection, Task } from "@/types";
+import RemoveSection from "./RemoveSection";
 
 const Section = ({ section }: { section: StructuredSection }) => {
   return (
@@ -11,9 +10,7 @@ const Section = ({ section }: { section: StructuredSection }) => {
         <h2 className="font-semibold self-center">{section.title}</h2>
         <div className="flex gap-3 items-center">
           <AddTask sectionId={section.id} />
-          <Button type="button" variant="link" className="p-0 h-5">
-            <Minus className="w-4 h-4" />
-          </Button>
+          <RemoveSection sectionId={section.id} />
         </div>
       </div>
       <div className="flex flex-1 flex-col gap-4 rounded-lg bg-gray-200 ">

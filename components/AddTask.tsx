@@ -29,8 +29,11 @@ import { Button } from "./ui/button";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { addTask } from "@/lib/actions/task.action";
 import { useToast } from "@/hooks/use-toast";
+import { useState } from "react";
 
 const AddTask = ({ sectionId }: { sectionId: string }) => {
+  const [open, setOpen] = useState(false);
+
   const { toast } = useToast();
 
   const form = useForm({
@@ -62,12 +65,13 @@ const AddTask = ({ sectionId }: { sectionId: string }) => {
     toast({
       description: res.message,
     });
+    setOpen(false)
   };
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Plus className="w-4 h-4 cursor-pointer" />
+        <Plus className="w-4 h-4 cursor-pointer" onClick={() => setOpen(true)}/>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <Form {...form}>
