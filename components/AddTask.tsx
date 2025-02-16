@@ -69,7 +69,7 @@ const AddTask = () => {
                 name="dueDate"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Tag</FormLabel>
+                    <FormLabel>Due Date</FormLabel>
                     <FormControl>
                       <Input type="date" placeholder="Select Due Date" {...field} />
                     </FormControl>

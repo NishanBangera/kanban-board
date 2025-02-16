@@ -8,7 +8,7 @@ const Section = ({ section }: { section: SectionType }) => {
   return (
     <div className="flex flex-col gap-5 w-[300px] px-4">
       <div className="flex justify-between">
-        <h2 className="font-semibold self-center">{section.name}</h2>
+        <h2 className="font-semibold self-center">{section.title}</h2>
         <div className="flex gap-3 items-center">
           <AddTask />
           <Button type="button" variant="link" className="p-0 h-5">

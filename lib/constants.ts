@@ -4,3 +4,7 @@ export const defaultAddTask = {
     dueDate: "",
     users: ""
 }
+
+export const defaultAddSection = {
+    title: ""
+}

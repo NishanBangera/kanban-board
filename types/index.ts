@@ -1,9 +1,10 @@
+import { createSectionSchema } from "@/lib/validators";
+import { z } from "zod";
+
 export type User = {
     id: string;
     image: string;
     name: string;
-    // email: string;
-    // password:
 }
 
 export type Task = {
@@ -14,8 +15,7 @@ export type Task = {
     user: User;
 }
 
-export type Section = {
-    id: string;
-    name: string;
-    tasks: Task[]
+export type Section = z.infer<typeof createSectionSchema> & {
+    createdAt: boolean
+    tasks: []
 }

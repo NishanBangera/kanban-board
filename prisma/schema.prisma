@@ -15,7 +15,7 @@ datasource db {
 
 model Section {
   id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name      String
+  title     String   @unique(map:"section_title_idx")
   createdAt DateTime @default(now()) @db.Timestamp(6)
   tasks     Task[]
 }
