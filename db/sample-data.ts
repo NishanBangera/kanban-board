@@ -93,4 +93,32 @@ const sampleData = {
   ],
 };
 
+export const users = [
+  {
+      id: 1,
+      name: "Emily Johnson",
+      avatar: "https://dummyjson.com/icon/emilys/128",
+  },
+  {
+      id: 2,
+      name: "Michael Williams",
+      avatar: "https://dummyjson.com/icon/michaelw/128",
+  },
+  {
+      id: 3,
+      name: "James Davis",
+      avatar: "https://dummyjson.com/icon/jamesd/128",
+  },
+  {
+      id: 4,
+      name: "Emma Miller",
+      avatar: "https://dummyjson.com/icon/emmaj/128",
+  },
+  {
+      id: 5,
+      name: "Alexander Jones",
+      avatar: "https://dummyjson.com/icon/alexanderj/128",
+  },
+];
+
 export default sampleData

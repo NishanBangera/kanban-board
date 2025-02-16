@@ -1,7 +1,8 @@
-import { Minus, Plus } from "lucide-react";
+import { Minus } from "lucide-react";
 import TaskCard from "./TaskCard";
 import { Button } from "./ui/button";
 import { Section as SectionType, Task } from "@/types";
+import AddTask from "./AddTask";
 
 const Section = ({ section }: { section: SectionType }) => {
   return (
@@ -9,9 +10,7 @@ const Section = ({ section }: { section: SectionType }) => {
       <div className="flex justify-between">
         <h2 className="font-semibold self-center">{section.name}</h2>
         <div className="flex gap-3 items-center">
-          <Button type="button" variant="link" className="p-0 h-5 ">
-            <Plus className="w-4 h-4" />
-          </Button>
+          <AddTask />
           <Button type="button" variant="link" className="p-0 h-5">
             <Minus className="w-4 h-4" />
           </Button>
