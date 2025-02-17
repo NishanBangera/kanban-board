@@ -1,0 +1,39 @@
+import { Card, CardContent, CardTitle } from "./ui/card";
+import { Badge } from "./ui/badge";
+import type { Task } from "@/types";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+import { User } from "lucide-react";
+
+const TaskCard = ({ task }: { task: Task }) => {
+  return (
+    <div className="p-3">
+      <Card className="px-2 py-2">
+        <CardTitle className="text-sm">{task.title}</CardTitle>
+        <CardContent className="p-2">
+          <div className="flex justify-between items-center">
+            <div className="flex space-x-3 items-center">
+              <Avatar>
+                <AvatarImage
+                  src="https://github.com/shadcn.png"
+                  alt="avatar"
+                />
+                <AvatarFallback><User /></AvatarFallback>
+              </Avatar>
+              <p className="text-sm">
+                {new Date(task.dueDate).toLocaleString("en-US", {
+                  day: "numeric",
+                  month: "short",
+                })}
+              </p>
+            </div>
+            <Badge variant="outline" className="bg-gray-50 border-none">
+              <p className="text-slate-400">{task.tag}</p>
+            </Badge>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
+export default TaskCard;
