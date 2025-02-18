@@ -1,7 +1,9 @@
-import type { Metadata } from "next";
 import "./globals.css";
 import { Inter } from "next/font/google";
 import { Toaster } from "@/components/ui/toaster";
+import { Metadata } from "next";
+import KanbanProvider from "@/context/KanbanProvider";
+import { getAllSections } from "@/lib/actions/section.action";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -14,15 +16,17 @@ export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SERVER_URL!),
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+
+  const data = await getAllSections()
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className={`${inter.className} antialiased`}>
-        {children}
+        <KanbanProvider data={data}>{children}</KanbanProvider>
         <Toaster />
       </body>
     </html>

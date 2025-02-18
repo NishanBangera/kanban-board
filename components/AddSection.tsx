@@ -19,9 +19,18 @@ import { addSectionSchema } from "@/lib/validators";
 import { z } from "zod";
 import { useToast } from "@/hooks/use-toast";
 import { addSection } from "@/lib/actions/section.action";
+import { useState } from "react";
+import { useKanbanContext } from "@/hooks/use-context";
+import { Section } from "@/types";
 
 const AddSection = () => {
   const { toast } = useToast();
+
+  const { addNewSection } = useKanbanContext() as {
+    addNewSection: (section: Section) => void;
+  };
+
+  const [open, setOpen] = useState(false);
 
   const form = useForm({
     resolver: zodResolver(addSectionSchema),
@@ -33,23 +42,27 @@ const AddSection = () => {
     values
   ) => {
     const res = await addSection(values);
-
-    if (!res.success) {
+    setOpen(false);
+    if (res.success) {
+      addNewSection(res.data!);
+      return toast({
+        description: res.message,
+      });
+    } else {
       return toast({
         variant: "destructive",
         description: res.message,
       });
     }
-
-    toast({
-      description: res.message,
-    });
   };
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Plus className="w-4 h-4 mt-1 cursor-pointer" />
+        <Plus
+          className="w-4 h-4 mt-1 cursor-pointer"
+          onClick={() => setOpen(true)}
+        />
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <Form {...form}>

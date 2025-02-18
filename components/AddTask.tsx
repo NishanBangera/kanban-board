@@ -31,7 +31,7 @@ import { addTask } from "@/lib/actions/task.action";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 
-const AddTask = ({ sectionId }: { sectionId: string }) => {
+const AddTask = ({ sectionId, position }: { sectionId: string, position:number }) => {
   const [open, setOpen] = useState(false);
 
   const { toast } = useToast();
@@ -46,15 +46,17 @@ const AddTask = ({ sectionId }: { sectionId: string }) => {
     values
   ) => {
     const user = users.find((user) => user.id === Number(values.user))!;
+    
     const data = {
       ...values,
       dueDate: new Date(values.dueDate),
       user,
+      position,
       sectionId,
     };
 
     const res = await addTask(data);
-
+    setOpen(false)
     if (!res.success) {
       return toast({
         variant: "destructive",
@@ -65,7 +67,7 @@ const AddTask = ({ sectionId }: { sectionId: string }) => {
     toast({
       description: res.message,
     });
-    setOpen(false)
+    
   };
 
   return (

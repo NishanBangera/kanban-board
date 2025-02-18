@@ -15,8 +15,9 @@ datasource db {
 
 model Section {
   id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  title     String   @unique(map:"section_title_idx")
+  title     String
   createdAt DateTime @default(now()) @db.Timestamp(6)
+  updatedAt DateTime @updatedAt
   tasks     Task[]
 }
 
@@ -25,10 +26,10 @@ model Task {
   sectionId String   @db.Uuid
   title     String
   tag       String
+  position  Int
   dueDate   DateTime @db.Timestamp(6)
   user      Json     @db.Json
   createdAt DateTime @default(now()) @db.Timestamp(6)
-  updatedAt DateTime @updatedAt
 
   section Section @relation(fields: [sectionId], references: [id], onDelete: Cascade)
 }

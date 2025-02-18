@@ -9,23 +9,23 @@ import { StructuredSection } from "@/types";
 
 export async function getAllSections() {
   const data = await prisma.section.findMany({
-    orderBy: {createdAt: 'asc'},
     include: {
       tasks: true,
     },
   });
-  return convertToPlainObject(data as StructuredSection[]);
+  return convertToPlainObject(data as unknown as StructuredSection[]);
 }
 
 export async function addSection(data: z.infer<typeof addSectionSchema>) {
   try {
     const section = addSectionSchema.parse(data);
-    await prisma.section.create({ data: section });
-
-    revalidatePath("/");
-
+    const newSection = await prisma.section.create({ data: section });
+    console.log("saraaaaaaaaaaaaaa", newSection)
+    // revalidatePath("/");
+    
     return {
       success: true,
+      data: newSection,
       message: "New section has been successfully created",
     };
   } catch (error) {
@@ -33,7 +33,10 @@ export async function addSection(data: z.infer<typeof addSectionSchema>) {
   }
 }
 
-export async function deleteOrUpdateSection(prevState: unknown, formData: FormData) {
+export async function deleteOrUpdateSection(
+  prevState: unknown,
+  formData: FormData
+) {
   try {
     if (formData.get("action") === "update") {
       const data = updateSectionSchema.parse({
@@ -46,9 +49,12 @@ export async function deleteOrUpdateSection(prevState: unknown, formData: FormDa
         data: { title: data.title },
       });
 
-      return { success: true, message: "Section updated successfully" , revalidate: true};
-    } 
-    else if (formData.get("action") === "delete") {
+      return {
+        success: true,
+        message: "Section updated successfully",
+        revalidate: true,
+      };
+    } else if (formData.get("action") === "delete") {
       const sectionId = formData.get("sectionId") as string;
 
       const deletedSection = await prisma.section.delete({
@@ -58,15 +64,14 @@ export async function deleteOrUpdateSection(prevState: unknown, formData: FormDa
       return {
         success: false,
         message: `${deletedSection.title} section and all its related tasks deleted successfully`,
-        revalidate: true
+        revalidate: true,
       };
     }
-    
   } catch (error) {
     return { success: false, message: formatError(error), revalidate: false };
   }
 }
 
 export async function revalidate() {
-  revalidatePath("/"); 
+  revalidatePath("/");
 }
