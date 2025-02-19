@@ -71,12 +71,11 @@ export async function addTask(
 ) {
   try {
     const newTask = taskActionSchema.parse(data);
-    await prisma.task.create({ data: newTask });
-
-    revalidatePath("/");
+    const response = await prisma.task.create({ data: newTask })
 
     return {
       success: true,
+      data: response,
       message: `New task has been successfully assigned to ${newTask.user.name}`,
     };
   } catch (error) {

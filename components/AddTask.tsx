@@ -1,5 +1,4 @@
 "use client";
-
 import { SubmitHandler, useForm } from "react-hook-form";
 import {
   Dialog,
@@ -30,9 +29,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { addTask } from "@/lib/actions/task.action";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
+import { useKanbanContext } from "@/hooks/use-context";
 
 const AddTask = ({ sectionId, position }: { sectionId: string, position:number }) => {
   const [open, setOpen] = useState(false);
+
+  const {addNewTask} = useKanbanContext() as {addNewTask: (task: Task) => void}
 
   const { toast } = useToast();
 
@@ -63,7 +65,7 @@ const AddTask = ({ sectionId, position }: { sectionId: string, position:number }
         description: res.message,
       });
     }
-
+    addNewTask(res.data)
     toast({
       description: res.message,
     });

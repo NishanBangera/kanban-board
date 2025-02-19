@@ -1,5 +1,3 @@
-"use client";
-
 import TaskCard from "./TaskCard";
 import AddTask from "./AddTask";
 import { Section as SectionType, Task } from "@/types";

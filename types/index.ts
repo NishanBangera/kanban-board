@@ -23,6 +23,10 @@ export type StructuredSection = {
 export type Section =  {
   id: string;
   title: string;
-  createdAt: Date;
-  updatedAt: Date;
 };
+
+export type User = {
+  id: number,
+  name: string,
+  avatar: string
+}

@@ -20,9 +20,9 @@ export async function addSection(data: z.infer<typeof addSectionSchema>) {
   try {
     const section = addSectionSchema.parse(data);
     const newSection = await prisma.section.create({ data: section });
-    console.log("saraaaaaaaaaaaaaa", newSection)
+    console.log("saraaaaaaaaaaaaaa", newSection);
     // revalidatePath("/");
-    
+
     return {
       success: true,
       data: newSection,
@@ -44,15 +44,15 @@ export async function deleteOrUpdateSection(
         title: formData.get("title"),
       });
 
-      await prisma.section.update({
+      const updatedSection = await prisma.section.update({
         where: { id: data.sectionId },
         data: { title: data.title },
       });
 
       return {
         success: true,
+        data: updatedSection,
         message: "Section updated successfully",
-        revalidate: true,
       };
     } else if (formData.get("action") === "delete") {
       const sectionId = formData.get("sectionId") as string;
@@ -62,13 +62,13 @@ export async function deleteOrUpdateSection(
       });
 
       return {
-        success: false,
+        success: true,
+        data: deletedSection,
         message: `${deletedSection.title} section and all its related tasks deleted successfully`,
-        revalidate: true,
       };
     }
   } catch (error) {
-    return { success: false, message: formatError(error), revalidate: false };
+    return { success: false, message: formatError(error) };
   }
 }
 

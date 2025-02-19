@@ -1,22 +1,27 @@
-"use client";
-
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useActionState, useEffect, useState } from "react";
 import { useFormStatus } from "react-dom";
-import { deleteOrUpdateSection, revalidate } from "@/lib/actions/section.action";
+import { deleteOrUpdateSection } from "@/lib/actions/section.action";
 import { Ellipsis } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { useToast } from "@/hooks/use-toast";
+import { useKanbanContext } from "@/hooks/use-context";
+import { Section } from "@/types";
 
 const RemoveSection = ({ sectionId }: { sectionId: string }) => {
   const [open, setOpen] = useState(false);
   const [actionType, setActionType] = useState<"update" | "delete" | null>(
     null
   );
-  const [data, action] = useActionState(deleteOrUpdateSection, null);
+  const [response, action] = useActionState(deleteOrUpdateSection, null);
 
   const { toast } = useToast();
+
+  const { deleteSection, updateSection } = useKanbanContext() as {
+    deleteSection: (id: string) => void;
+    updateSection: (section: Section) => void;
+  };
 
   const RenameButton = () => {
     const { pending } = useFormStatus();
@@ -51,21 +56,25 @@ const RemoveSection = ({ sectionId }: { sectionId: string }) => {
   };
 
   useEffect(() => {
-    if (data?.success) {
+    if (response?.success) {
+      const { createdAt, updatedAt, ...rest } = response.data;
+      const updateState =
+        actionType === "delete"
+          ? deleteSection(sectionId)
+          : updateSection(rest);
+
       toast({
-        description: data.message,
+        description: response.message,
       });
       setOpen(false);
-      revalidate();
-    } else if (data?.success === false) {
+    } else if (response?.success === false) {
       toast({
         variant: "destructive",
-        description: data.message,
+        description: response.message,
       });
       setOpen(false);
-      revalidate();
     }
-  }, [data]);
+  }, [response]);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
