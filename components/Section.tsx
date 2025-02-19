@@ -1,7 +1,7 @@
 import TaskCard from "./TaskCard";
 import AddTask from "./AddTask";
 import { Section as SectionType, Task } from "@/types";
-import RemoveSection from "./RemoveSection";
+import RemoveAndUpdateSection from "./RemoveAndUpdateSection";
 import { useDroppable } from "@dnd-kit/core";
 import { SortableContext } from "@dnd-kit/sortable";
 import { useKanbanContext } from "@/hooks/use-context";
@@ -21,7 +21,7 @@ const Section = ({ section }: { section: SectionType }) => {
         <h2 className="font-semibold self-center">{section.title}</h2>
         <div className="flex gap-3 items-center">
           <AddTask sectionId={section.id} position={sectionTaskIds.length + 1} />
-          <RemoveSection sectionId={section.id} />
+          <RemoveAndUpdateSection sectionId={section.id} />
         </div>
       </div>
 

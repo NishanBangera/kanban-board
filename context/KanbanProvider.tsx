@@ -52,6 +52,10 @@ const KanbanProvider = ({
     dispatch({ type: "ADD_TASK", payload: task });
   }, []);
 
+  const deleteAndUpdateTaskPosition = useCallback((id: string, data: undefined | Task[]) => {
+    dispatch({ type: "DELETE_TASK", payload: {id,data} });
+  }, []);
+
   const addNewSection = useCallback((section: Section) => {
     dispatch({ type: "ADD_SECTION", payload: section });
   }, []);
@@ -66,7 +70,7 @@ const KanbanProvider = ({
 
   return (
     <KanbanContext.Provider
-      value={{ ...state, addNewSection, deleteSection, updateSection, addNewTask }}
+      value={{ ...state, addNewSection, deleteSection, updateSection, addNewTask, deleteAndUpdateTaskPosition }}
     >
       {children}
     </KanbanContext.Provider>

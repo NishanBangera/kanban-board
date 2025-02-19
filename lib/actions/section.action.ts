@@ -20,8 +20,6 @@ export async function addSection(data: z.infer<typeof addSectionSchema>) {
   try {
     const section = addSectionSchema.parse(data);
     const newSection = await prisma.section.create({ data: section });
-    console.log("saraaaaaaaaaaaaaa", newSection);
-    // revalidatePath("/");
 
     return {
       success: true,

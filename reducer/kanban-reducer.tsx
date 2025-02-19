@@ -22,6 +22,25 @@ export const kanbanReducer = (state: State, action: Action): State => {
       };
     }
 
+    case "DELETE_TASK": {
+      const { id, data } = action.payload;
+      const filteredTasks = state.tasks.filter((task) => task.id !== id);
+      if(data){
+        const updatedTasks = filteredTasks.map((task) =>
+          data.find((modified: Task) => task.id === modified.id) || task
+        );
+        return {
+          ...state,
+          tasks: updatedTasks
+        }
+      }
+      return {
+        ...state,
+        tasks: filteredTasks
+      }
+      
+    }
+
     case "ADD_SECTION": {
       const { title, id } = action.payload;
       const newSection = {

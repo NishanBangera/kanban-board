@@ -9,7 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useKanbanContext } from "@/hooks/use-context";
 import { Section } from "@/types";
 
-const RemoveSection = ({ sectionId }: { sectionId: string }) => {
+const RemoveAndUpdateSection = ({ sectionId }: { sectionId: string }) => {
   const [open, setOpen] = useState(false);
   const [actionType, setActionType] = useState<"update" | "delete" | null>(
     null
@@ -106,4 +106,4 @@ const RemoveSection = ({ sectionId }: { sectionId: string }) => {
   );
 };
 
-export default RemoveSection;
+export default RemoveAndUpdateSection;

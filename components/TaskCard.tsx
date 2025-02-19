@@ -4,6 +4,8 @@ import { Badge } from "./ui/badge";
 import type { Task } from "@/types";
 import { CSS } from "@dnd-kit/utilities";
 import { useSortable } from "@dnd-kit/sortable";
+import RemoveTask from "./RemoveTask";
+import { deleteTask } from "@/lib/actions/task.action";
 
 const TaskCard = ({ task }: { task: Task }) => {
   const { attributes, listeners, setNodeRef, transform, isDragging, transition } = useSortable({ id: task.id, data: {...task, type: "task"} });
@@ -34,7 +36,10 @@ const TaskCard = ({ task }: { task: Task }) => {
         {...listeners}
         className="px-2 py-2"
       >
+        <div className="flex justify-between">
         <CardTitle className="text-sm">{task.title}</CardTitle>
+        <RemoveTask id={task.id} />
+        </div>
         <CardContent className="p-2">
           <div className="flex justify-between items-center">
             <div className="flex space-x-3 items-center">
