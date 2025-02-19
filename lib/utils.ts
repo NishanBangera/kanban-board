@@ -1,3 +1,4 @@
+import { Task } from "@/types";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -29,5 +30,28 @@ export function formatError(error: any) {
     return typeof error.message === "string"
       ? error.message
       : JSON.stringify(error.message);
+  }
+}
+
+export function reorderTask(sortedTasks: Task[]) {
+  const sectionMap = new Map<string, Task[]>();
+
+  sortedTasks.forEach((task) => {
+    if (!sectionMap.has(task.sectionId)) {
+      sectionMap.set(task.sectionId, []);
+    }
+    sectionMap.get(task.sectionId)!.push(task);
+  });
+  
+  let updates = []
+
+  for (const [sectionId, tasks] of sectionMap.entries()) {
+    tasks.forEach((task, index) => {
+      updates.push({
+        id: task.id,
+        sectionId: task.sectionId, // Ensure sectionId is set correctly
+        position: index + 1, // Reset position within the section
+      });
+    });
   }
 }

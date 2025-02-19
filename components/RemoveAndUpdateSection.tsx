@@ -57,11 +57,10 @@ const RemoveAndUpdateSection = ({ sectionId }: { sectionId: string }) => {
 
   useEffect(() => {
     if (response?.success) {
-      const { createdAt, updatedAt, ...rest } = response.data;
-      const updateState =
-        actionType === "delete"
-          ? deleteSection(sectionId)
-          : updateSection(rest);
+      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+      actionType === "delete"
+        ? deleteSection(sectionId)
+        : updateSection(response.data!);
 
       toast({
         description: response.message,

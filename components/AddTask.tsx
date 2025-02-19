@@ -31,7 +31,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 import { useKanbanContext } from "@/hooks/use-context";
 
-const AddTask = ({ sectionId, position }: { sectionId: string, position:number }) => {
+const AddTask = ({ sectionId }: { sectionId: string }) => {
   const [open, setOpen] = useState(false);
 
   const {addNewTask} = useKanbanContext() as {addNewTask: (task: Task) => void}
@@ -53,12 +53,10 @@ const AddTask = ({ sectionId, position }: { sectionId: string, position:number }
       ...values,
       dueDate: new Date(values.dueDate),
       user,
-      position,
       sectionId,
     };
 
     const res = await addTask(data);
-    setOpen(false)
     if (!res.success) {
       return toast({
         variant: "destructive",
@@ -66,6 +64,8 @@ const AddTask = ({ sectionId, position }: { sectionId: string, position:number }
       });
     }
     addNewTask(res.data)
+    setOpen(false)
+    form.reset()
     toast({
       description: res.message,
     });

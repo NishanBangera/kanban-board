@@ -5,7 +5,6 @@ import type { Task } from "@/types";
 import { CSS } from "@dnd-kit/utilities";
 import { useSortable } from "@dnd-kit/sortable";
 import RemoveTask from "./RemoveTask";
-import { deleteTask } from "@/lib/actions/task.action";
 
 const TaskCard = ({ task }: { task: Task }) => {
   const { attributes, listeners, setNodeRef, transform, isDragging, transition } = useSortable({ id: task.id, data: {...task, type: "task"} });
@@ -21,8 +20,8 @@ const TaskCard = ({ task }: { task: Task }) => {
         <Card
           ref={setNodeRef}
           style={style}
-          className="w-[227px] h-[61px] px-2 py-2 border border-solid border-rose-700"
-        ></Card>
+          className="w-[242px] h-[81px] border border-solid border-rose-700"
+        />
       </div>
     );
   }
@@ -38,7 +37,7 @@ const TaskCard = ({ task }: { task: Task }) => {
       >
         <div className="flex justify-between">
         <CardTitle className="text-sm">{task.title}</CardTitle>
-        <RemoveTask id={task.id} />
+        <RemoveTask id={task.id} sectionId={task.sectionId} />
         </div>
         <CardContent className="p-2">
           <div className="flex justify-between items-center">

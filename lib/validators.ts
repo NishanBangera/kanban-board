@@ -24,7 +24,6 @@ export const userSchema = z.object({
 export const taskActionSchema = taskSchema.extend({
     sectionId: z.string().min(1, "section id is required"),
     dueDate: z.date(),
-    position:z.coerce.number(),
     user: userSchema
 })
 

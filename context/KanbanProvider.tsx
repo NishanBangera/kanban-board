@@ -40,7 +40,8 @@ const KanbanProvider = ({
   data: StructuredSection[];
 }>) => {
   const tasks = data.map((section) => section.tasks);
-  const sections = data.map(({ tasks, createdAt, updatedAt, ...rest }) => rest);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const sections = data.map(({ tasks, ...rest }) => rest);
   const initialState = {
     sections,
     tasks: tasks.flat(),
@@ -52,7 +53,7 @@ const KanbanProvider = ({
     dispatch({ type: "ADD_TASK", payload: task });
   }, []);
 
-  const deleteAndUpdateTaskPosition = useCallback((id: string, data: undefined | Task[]) => {
+  const deleteTask = useCallback((id: string, data: undefined | Task[]) => {
     dispatch({ type: "DELETE_TASK", payload: {id,data} });
   }, []);
 
@@ -70,7 +71,7 @@ const KanbanProvider = ({
 
   return (
     <KanbanContext.Provider
-      value={{ ...state, addNewSection, deleteSection, updateSection, addNewTask, deleteAndUpdateTaskPosition }}
+      value={{ ...state, addNewSection, deleteSection, updateSection, addNewTask, deleteTask }}
     >
       {children}
     </KanbanContext.Provider>

@@ -20,13 +20,13 @@ const Section = ({ section }: { section: SectionType }) => {
       <div className="flex justify-between">
         <h2 className="font-semibold self-center">{section.title}</h2>
         <div className="flex gap-3 items-center">
-          <AddTask sectionId={section.id} position={sectionTaskIds.length + 1} />
+          <AddTask sectionId={section.id} />
           <RemoveAndUpdateSection sectionId={section.id} />
         </div>
       </div>
 
       <div
-        ref={setNodeRef}
+        // ref={setNodeRef}
         className="flex flex-1 flex-col gap-4 rounded-lg bg-gray-200 "
       >
         <SortableContext items={sectionTaskIds}>

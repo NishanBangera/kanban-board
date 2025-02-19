@@ -15,22 +15,20 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "./ui/button";
 import { useKanbanContext } from "@/hooks/use-context";
-import { Task } from "@/types";
-import { deleteTask } from "@/lib/actions/task.action";
+import { Section} from "@/types";
+import { deleteTaskAndUpdateTaskOrder } from "@/lib/actions/task.action";
 
-const RemoveTask = ({
-  id,
-}: {
-  id: string;
-}) => {
+const RemoveTask = ({ id, sectionId }: { id: string; sectionId: string }) => {
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
-  const {deleteAndUpdateTaskPosition} = useKanbanContext() as {deleteAndUpdateTaskPosition: (id: string, data: undefined | Task[]) => void;}
+  const { deleteTask } = useKanbanContext() as {
+    deleteTask: (id: string, data: Section) => void;
+  };
   const { toast } = useToast();
 
   const handleDeleteClick = () => {
     startTransition(async () => {
-      const res = await deleteTask(id);
+      const res = await deleteTaskAndUpdateTaskOrder(id,sectionId);
       if (!res.success) {
         toast({
           variant: "destructive",
@@ -38,7 +36,7 @@ const RemoveTask = ({
         });
       } else {
         // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-        deleteAndUpdateTaskPosition(id, res.data)
+        deleteTask(id, res.data!);
         setOpen(false);
         toast({
           description: res.message,

@@ -16,7 +16,7 @@ datasource db {
 model Section {
   id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   title      String
-  tasksOrder String[]
+  tasksOrder String[] @default([])
   createdAt  DateTime @default(now()) @db.Timestamp(6)
   updatedAt  DateTime @updatedAt
   tasks      Task[]

@@ -42,6 +42,7 @@ const AddSection = () => {
   ) => {
     const res = await addSection(values);
     setOpen(false);
+    form.reset()
     if (res.success) {
       addNewSection(res.data!);
       return toast({
