@@ -9,6 +9,7 @@ import { StructuredSection } from "@/types";
 
 export async function getAllSections() {
   const data = await prisma.section.findMany({
+    orderBy: {createdAt: "asc"},
     include: {
       tasks: true,
     },

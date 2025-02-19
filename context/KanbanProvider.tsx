@@ -39,7 +39,15 @@ const KanbanProvider = ({
   children: React.ReactNode;
   data: StructuredSection[];
 }>) => {
-  const tasks = data.map((section) => section.tasks);
+  const tasks = data.map((section) => {
+    if (section.tasks.length > 0) {
+      const taskMap = new Map(section.tasks.map((task) => [task.id, task]));
+      const sortedTasks = section.tasksOrder.map((id) => taskMap.get(id)) as Task[]
+      return sortedTasks;
+    }
+    return []
+  });
+
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const sections = data.map(({ tasks, ...rest }) => rest);
   const initialState = {
@@ -49,12 +57,19 @@ const KanbanProvider = ({
   };
   const [state, dispatch] = useReducer(kanbanReducer, initialState);
 
-  const addNewTask = useCallback((task: Task) => {
-    dispatch({ type: "ADD_TASK", payload: task });
+  const addNewTask = useCallback(
+    (data: { task: Task; tasksOrder: string[] }) => {
+      dispatch({ type: "ADD_TASK", payload: data });
+    },
+    []
+  );
+
+  const reorderTaskState = useCallback((tasks: Task[]) => {
+    dispatch({ type: "REORDER_TASK", payload: tasks });
   }, []);
 
   const deleteTask = useCallback((id: string, data: undefined | Task[]) => {
-    dispatch({ type: "DELETE_TASK", payload: {id,data} });
+    dispatch({ type: "DELETE_TASK", payload: { id, data } });
   }, []);
 
   const addNewSection = useCallback((section: Section) => {
@@ -71,7 +86,15 @@ const KanbanProvider = ({
 
   return (
     <KanbanContext.Provider
-      value={{ ...state, addNewSection, deleteSection, updateSection, addNewTask, deleteTask }}
+      value={{
+        ...state,
+        addNewSection,
+        deleteSection,
+        updateSection,
+        addNewTask,
+        deleteTask,
+        reorderTaskState
+      }}
     >
       {children}
     </KanbanContext.Provider>

@@ -14,27 +14,44 @@ interface Action {
 
 export const kanbanReducer = (state: State, action: Action): State => {
   switch (action.type) {
-    case "ADD_TASK": {
-      const newTask = action.payload;
+    case "REORDER_TASK": {
+      const reorderedTasks = action.payload
+      
       return {
         ...state,
-        tasks: [...state.tasks, newTask],
+        tasks: reorderedTasks
+      }
+    }
+
+    case "ADD_TASK": {
+      const { task, tasksOrder } = action.payload;
+      const modifiedSections = state.sections.map(
+        (section) => {
+          if(section.id === task.sectionId){
+            return {...section, tasksOrder}
+          }
+          return section
+        }
+      ) as Section[];
+      return {
+        ...state,
+        tasks: [...state.tasks, task],
+        sections: modifiedSections,
       };
     }
 
     case "DELETE_TASK": {
       const { id, data } = action.payload;
       const filteredTasks = state.tasks.filter((task) => task.id !== id);
-      const modifiedSection = state.sections.map(section => {
-        if(section.id === data.id) return data
-        return section
-      })
+      const modifiedSection = state.sections.map((section) => {
+        if (section.id === data.id) return data;
+        return section;
+      });
       return {
         ...state,
         tasks: filteredTasks,
-        sections: modifiedSection
-      }
-      
+        sections: modifiedSection,
+      };
     }
 
     case "ADD_SECTION": {

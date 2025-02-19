@@ -7,7 +7,7 @@ import { useSortable } from "@dnd-kit/sortable";
 import RemoveTask from "./RemoveTask";
 
 const TaskCard = ({ task }: { task: Task }) => {
-  const { attributes, listeners, setNodeRef, transform, isDragging, transition } = useSortable({ id: task.id, data: {...task, type: "task"} });
+  const { attributes, listeners, setNodeRef, transform, isDragging, transition } = useSortable({ id: task.id, data: {...task} });
 
   const style = {
     transition,

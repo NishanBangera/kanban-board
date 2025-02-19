@@ -6,12 +6,67 @@ import { prisma } from "@/db/prisma";
 import { formatError } from "../utils";
 import { Section, Task } from "@/types";
 
-export async function reorderTask(active: Task, over: Task | Section) {
-  if ("sectionId" in over) {
-    await prisma.$transaction(async (tx) => {
-      if (active.sectionId === over.sectionId) {
-      }
-    });
+export async function reorderTask(
+  active: Task,
+  over: Task | Section,
+  sortedList: Task[]
+) {
+  try {
+    if ("sectionId" in over) {
+      await prisma.$transaction(async (tx) => {
+        if (active.sectionId === over.sectionId) {
+          const filteredTasksOrder = sortedList
+            .filter((task) => task.sectionId === over.sectionId)
+            .map((task) => task.id);
+          return await tx.section.update({
+            where: { id: over.sectionId },
+            data: { tasksOrder: filteredTasksOrder },
+          });
+        } else {
+          const filteredTasksOrder1 = sortedList
+            .filter((task) => task.sectionId === active.sectionId)
+            .map((task) => task.id);
+          const filteredTasksOrder2 = sortedList
+            .filter((task) => task.sectionId === over.sectionId)
+            .map((task) => task.id);
+          await tx.task.update({
+            where: { id: active.id },
+            data: { sectionId: over.sectionId },
+          });
+          await tx.section.update({
+            where: { id: active.sectionId },
+            data: { tasksOrder: filteredTasksOrder1 },
+          });
+          await tx.section.update({
+            where: { id: over.sectionId },
+            data: { tasksOrder: filteredTasksOrder2 },
+          });
+        }
+      });
+    } else if ("tasksOrder" in over) {
+      await prisma.$transaction(async (tx) => {
+        const filteredTasksOrder1 = sortedList
+          .filter((task) => task.sectionId === active.sectionId)
+          .map((task) => task.id);
+        const filteredTasksOrder2 = sortedList
+          .filter((task) => task.sectionId === over.id)
+          .map((task) => task.id);
+        await tx.task.update({
+          where: { id: active.id },
+          data: { sectionId: over.id },
+        });
+        await tx.section.update({
+          where: { id: active.sectionId },
+          data: { tasksOrder: filteredTasksOrder1 },
+        });
+        await tx.section.update({
+          where: { id: over.id },
+          data: { tasksOrder: filteredTasksOrder2 },
+        });
+      });
+    }
+  } catch (error) {
+    return { success: false, message: formatError(error) };
   }
 }
 
@@ -20,21 +75,51 @@ export async function addTask(
 ) {
   try {
     const newTask = taskActionSchema.parse(data);
-    const response = await prisma.task.create({ data: newTask });
+    const response = await prisma.$transaction(async (tx) => {
+      // Fetch the current section
+      const section = await tx.section.findUnique({
+        where: { id: newTask.sectionId },
+        select: { tasksOrder: true },
+      });
+
+      if (!section) {
+        throw new Error("Section not found");
+      }
+
+      const { tasksOrder } = section;
+      const task = await tx.task.create({ data: newTask });
+      tasksOrder.push(task.id);
+
+      const sectionUpdate = await tx.section.update({
+        where: { id: task.sectionId },
+        data: { tasksOrder },
+      });
+
+      return {
+        task: task,
+        tasksOrder: sectionUpdate.tasksOrder,
+      };
+    });
 
     return {
       success: true,
-      data: response,
-      message: `New task has been successfully assigned to ${newTask.user.name}`,
+      data: {
+        task: response.task,
+        tasksOrder: response.tasksOrder,
+      },
+      message: `${response.task.title} task has been deleted successfully`,
     };
   } catch (error) {
     return { success: false, message: formatError(error) };
   }
 }
 
-export async function deleteTaskAndUpdateTaskOrder(id: string, sectionId: string) {
+export async function deleteTaskAndUpdateTaskOrder(
+  id: string,
+  sectionId: string
+) {
   try {
-    const {title,data} =await prisma.$transaction(async (tx) => {
+    const { title, data } = await prisma.$transaction(async (tx) => {
       // Fetch the current section
       const section = await tx.section.findUnique({
         where: { id: sectionId },
@@ -60,14 +145,14 @@ export async function deleteTaskAndUpdateTaskOrder(id: string, sectionId: string
 
       return {
         title: deletedTask.title,
-        data: updatedSection
-      }
+        data: updatedSection,
+      };
     });
     return {
       success: true,
       data,
-      message: `${title} task has been deleted successfully`
-    }
+      message: `${title} task has been deleted successfully`,
+    };
   } catch (error) {
     return { success: false, message: formatError(error) };
   }
