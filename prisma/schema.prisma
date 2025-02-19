@@ -14,11 +14,12 @@ datasource db {
 }
 
 model Section {
-  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  title     String
-  createdAt DateTime @default(now()) @db.Timestamp(6)
-  updatedAt DateTime @updatedAt
-  tasks     Task[]
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title      String
+  tasksOrder String[]
+  createdAt  DateTime @default(now()) @db.Timestamp(6)
+  updatedAt  DateTime @updatedAt
+  tasks      Task[]
 }
 
 model Task {
@@ -26,7 +27,6 @@ model Task {
   sectionId String   @db.Uuid
   title     String
   tag       String
-  position  Int
   dueDate   DateTime @db.Timestamp(6)
   user      Json     @db.Json
   createdAt DateTime @default(now()) @db.Timestamp(6)
