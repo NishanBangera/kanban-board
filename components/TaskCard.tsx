@@ -9,13 +9,27 @@ import { useSortable } from "@dnd-kit/sortable";
 import RemoveTask from "./RemoveTask";
 
 const TaskCard = ({ task }: { task: Task }) => {
-  const dueDate = new Date(task.dueDate)
-  const presentDate = new Date()
-  const formattedDate = dueDate.getDate() === presentDate.getDate() ? "Today" : dueDate.getDate() === presentDate.getDate() - 1 ? "Yesterday" : dueDate.getDate() === presentDate.getDate() + 1 ? "Tomorrow" : dueDate.toLocaleString("en-US", {
-    day: "numeric",
-    month: "short",
-  })
-  const formattedDateColor = dueDate.getDate() === presentDate.getDate() ? "text-gray-900" : dueDate.getDate() < presentDate.getDate() ? "text-red-700" : dueDate.getDate() === presentDate.getDate() + 1 ? "text-blue-800" : "text-slate-400"
+  const dueDate = new Date(task.dueDate);
+  const presentDate = new Date();
+  const formattedDate =
+    dueDate.getDate() === presentDate.getDate()
+      ? "Today"
+      : dueDate.getDate() === presentDate.getDate() - 1
+      ? "Yesterday"
+      : dueDate.getDate() === presentDate.getDate() + 1
+      ? "Tomorrow"
+      : dueDate.toLocaleString("en-US", {
+          day: "numeric",
+          month: "short",
+        });
+  const formattedDateColor =
+    dueDate.getDate() === presentDate.getDate()
+      ? "text-gray-900"
+      : dueDate.getDate() < presentDate.getDate()
+      ? "text-red-700"
+      : dueDate.getDate() === presentDate.getDate() + 1
+      ? "text-blue-800"
+      : "text-slate-400";
 
   const {
     attributes,

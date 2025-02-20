@@ -1,9 +1,11 @@
+
 import "./globals.css";
 import { Inter } from "next/font/google";
 import { Toaster } from "@/components/ui/toaster";
 import { Metadata } from "next";
 import KanbanProvider from "@/context/KanbanProvider";
 import { getAllSections } from "@/lib/actions/section.action";
+import Navbar from "@/components/Navbar";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -21,11 +23,11 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-
-  const data = await getAllSections()
+  const data = await getAllSections();
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.className} antialiased`}>
+      <body className={`${inter.className} h-screen antialiased`}>
+        <Navbar />
         <KanbanProvider data={data}>{children}</KanbanProvider>
         <Toaster />
       </body>
