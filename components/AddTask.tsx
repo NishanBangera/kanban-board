@@ -20,7 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
-import { users } from "@/db/sample-data";
+import { users } from "@/context/KanbanProvider";
 import { defaultAddTask } from "@/lib/constants";
 import { z } from "zod";
 import { addFormTaskSchema } from "@/lib/validators";
@@ -30,25 +30,33 @@ import { addTask } from "@/lib/actions/task.action";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 import { useKanbanContext } from "@/hooks/use-context";
+import { Task } from "@/types";
 
 const AddTask = ({ sectionId }: { sectionId: string }) => {
   const [open, setOpen] = useState(false);
 
-  const {addNewTask} = useKanbanContext() as {addNewTask: (task: Task) => void}
+  const { addNewTask } = useKanbanContext() as {
+    addNewTask: (data: { task: Task; tasksOrder: string[] }) => void;
+  };
 
   const { toast } = useToast();
+
+  const date = new Date();
+  const formattedDate = `${date.getFullYear()}-${
+    date.getMonth() > 9 ? date.getMonth() + 1 : "0" + (date.getMonth() + 1)
+  }-${date.getDate() > 9 ? date.getDate() : "0" + date.getDate()}`;
 
   const form = useForm({
     resolver: zodResolver(addFormTaskSchema),
     defaultValues: defaultAddTask,
   });
 
-  // Submit form handler
+  // Submit form handlerr
   const onSubmit: SubmitHandler<z.infer<typeof addFormTaskSchema>> = async (
     values
   ) => {
     const user = users.find((user) => user.id === Number(values.user))!;
-    
+
     const data = {
       ...values,
       dueDate: new Date(values.dueDate),
@@ -63,19 +71,23 @@ const AddTask = ({ sectionId }: { sectionId: string }) => {
         description: res.message,
       });
     }
-    addNewTask(res.data)
-    setOpen(false)
-    form.reset()
+    if (res.data) {
+      addNewTask(res.data as { task: Task; tasksOrder: string[] });
+    }
+    setOpen(false);
+    form.reset();
     toast({
       description: res.message,
     });
-    
   };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Plus className="w-4 h-4 cursor-pointer" onClick={() => setOpen(true)}/>
+        <Plus
+          className="w-4 h-4 cursor-pointer"
+          onClick={() => setOpen(true)}
+        />
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <Form {...form}>
@@ -118,6 +130,7 @@ const AddTask = ({ sectionId }: { sectionId: string }) => {
                       <Input
                         type="date"
                         placeholder="Select Due Date"
+                        min={formattedDate}
                         {...field}
                       />
                     </FormControl>

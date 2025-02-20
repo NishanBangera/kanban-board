@@ -1,3 +1,4 @@
+"use client";
 import TaskCard from "./TaskCard";
 import AddTask from "./AddTask";
 import { Section as SectionType, Task } from "@/types";
@@ -7,12 +8,12 @@ import { SortableContext } from "@dnd-kit/sortable";
 import { useKanbanContext } from "@/hooks/use-context";
 
 const Section = ({ section }: { section: SectionType }) => {
-  const {tasks} = useKanbanContext() as {tasks: Task[]}
-  const sectionTasks = tasks.filter(task => task.sectionId === section.id)
+  const { tasks } = useKanbanContext() as { tasks: Task[] };
+  const sectionTasks = tasks.filter((task) => task.sectionId === section.id);
   const sectionTaskIds = sectionTasks.map((task) => task.id);
   const { setNodeRef } = useDroppable({
     id: section.id,
-    data: {...section}
+    data: { ...section },
   });
 
   return (

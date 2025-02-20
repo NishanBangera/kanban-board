@@ -4,7 +4,7 @@ import { kanbanReducer } from "@/reducer/kanban-reducer";
 import { Section, StructuredSection, Task } from "@/types";
 import { useCallback, useReducer } from "react";
 
-const users = [
+export const users = [
   {
     id: 1,
     name: "Emily Johnson",

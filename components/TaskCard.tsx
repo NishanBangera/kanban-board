@@ -1,3 +1,5 @@
+"use client";
+
 import Image from "next/image";
 import { Card, CardContent, CardTitle } from "./ui/card";
 import { Badge } from "./ui/badge";
@@ -7,11 +9,18 @@ import { useSortable } from "@dnd-kit/sortable";
 import RemoveTask from "./RemoveTask";
 
 const TaskCard = ({ task }: { task: Task }) => {
-  const { attributes, listeners, setNodeRef, transform, isDragging, transition } = useSortable({ id: task.id, data: {...task} });
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    isDragging,
+    transition,
+  } = useSortable({ id: task.id, data: { ...task } });
 
   const style = {
     transition,
-    transform: CSS.Transform.toString(transform)
+    transform: CSS.Transform.toString(transform),
   };
 
   if (isDragging) {
@@ -36,8 +45,8 @@ const TaskCard = ({ task }: { task: Task }) => {
         className="px-2 py-2"
       >
         <div className="flex justify-between">
-        <CardTitle className="text-sm">{task.title}</CardTitle>
-        <RemoveTask id={task.id} sectionId={task.sectionId} />
+          <CardTitle className="text-sm">{task.title}</CardTitle>
+          <RemoveTask id={task.id} sectionId={task.sectionId} />
         </div>
         <CardContent className="p-2">
           <div className="flex justify-between items-center">
