@@ -1,6 +1,7 @@
 import { createContext, useContext } from "react";
 
-export const KanbanContext = createContext();
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const KanbanContext = createContext<null | any>(null);
 
 export const useKanbanContext = () => {
   return useContext(KanbanContext);

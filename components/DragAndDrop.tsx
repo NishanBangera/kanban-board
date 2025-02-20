@@ -19,12 +19,22 @@ import { reorderTask } from "@/lib/actions/task.action";
 const DragAndDrop = () => {
   const [activeTask, setActiveTask] = useState<Task | null>(null);
 
-  const { sections, tasks, reorderTaskState } = useKanbanContext() as {
+  const kanbanContext = useKanbanContext();
+
+  if (!kanbanContext) {
+    throw new Error("Kanban context is null");
+  }
+
+  const {
+    sections,
+    tasks,
+    reorderTaskState,
+  }: {
     sections: SectionType[];
     tasks: Task[];
     reorderTaskState: (tasks: Task[]) => void;
-  };
-
+  } = kanbanContext;
+  
   const onDragStart = (event: DragStartEvent) => {
     setActiveTask(event.active.data.current as Task);
   };
@@ -43,7 +53,7 @@ const DragAndDrop = () => {
       const overIndex = tasks.findIndex((t) => t.id === over.id);
 
       tasks[activeIndex].sectionId = tasks[overIndex].sectionId;
-    
+
       const dndSortedList: Task[] = arrayMove(tasks, activeIndex, overIndex);
       reorderTaskState(dndSortedList);
       await reorderTask(activeTaskData, overTaskData, dndSortedList);

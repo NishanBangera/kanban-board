@@ -65,7 +65,7 @@ export const kanbanReducer = (state: State, action: Action): State => {
     case "UPDATE_SECTION": {
       const { id, title } = action.payload;
       const updatedSections = state.sections.map((section) => {
-        if (section.id === id) return { id, title };
+        if (section.id === id) return { ...section,id, title };
         return section;
       });
       return {

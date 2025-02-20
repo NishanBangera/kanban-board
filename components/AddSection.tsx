@@ -25,10 +25,14 @@ import { Section } from "@/types";
 const AddSection = () => {
   const { toast } = useToast();
 
-  const { addNewSection } = useKanbanContext() as {
-    addNewSection: (section: Section) => void;
-  };
+  const kanbanContext = useKanbanContext();
 
+  if (!kanbanContext) {
+    throw new Error("Kanban context is null");
+  }
+
+  const { addNewSection }: { addNewSection: (section: Section) => void } =
+    kanbanContext;
   const [open, setOpen] = useState(false);
 
   const form = useForm({
@@ -42,7 +46,7 @@ const AddSection = () => {
   ) => {
     const res = await addSection(values);
     setOpen(false);
-    form.reset()
+    form.reset();
     if (res.success) {
       addNewSection(res.data!);
       return toast({

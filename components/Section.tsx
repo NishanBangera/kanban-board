@@ -8,7 +8,14 @@ import { SortableContext } from "@dnd-kit/sortable";
 import { useKanbanContext } from "@/hooks/use-context";
 
 const Section = ({ section }: { section: SectionType }) => {
-  const { tasks } = useKanbanContext() as { tasks: Task[] };
+  const kanbanContext = useKanbanContext();
+
+  if (!kanbanContext) {
+    throw new Error("Kanban context is null");
+  }
+
+  const { tasks }: { tasks: Task[] } = kanbanContext;
+
   const sectionTasks = tasks.filter((task) => task.sectionId === section.id);
   const sectionTaskIds = sectionTasks.map((task) => task.id);
   const { setNodeRef } = useDroppable({

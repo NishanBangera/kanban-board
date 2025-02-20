@@ -35,10 +35,11 @@ import { Task } from "@/types";
 const AddTask = ({ sectionId }: { sectionId: string }) => {
   const [open, setOpen] = useState(false);
 
-  const { addNewTask } = useKanbanContext() as {
-    addNewTask: (data: { task: Task; tasksOrder: string[] }) => void;
-  };
-
+  const kanbanContext = useKanbanContext();
+  if (!kanbanContext) {
+    throw new Error("Kanban context is null");
+  }
+  const { addNewTask } : {addNewTask: (data: { task: Task; tasksOrder: string[] }) => void;} = kanbanContext;
   const { toast } = useToast();
 
   const date = new Date();

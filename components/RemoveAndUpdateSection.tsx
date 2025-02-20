@@ -20,10 +20,19 @@ const RemoveAndUpdateSection = ({ sectionId }: { sectionId: string }) => {
 
   const { toast } = useToast();
 
-  const { deleteSection, updateSection } = useKanbanContext() as {
+  const kanbanContext = useKanbanContext();
+
+  if (!kanbanContext) {
+    throw new Error("Kanban context is null");
+  }
+
+  const {
+    deleteSection,
+    updateSection,
+  }: {
     deleteSection: (id: string) => void;
     updateSection: (section: Section) => void;
-  };
+  } = kanbanContext;
 
   const RenameButton = () => {
     const { pending } = useFormStatus();

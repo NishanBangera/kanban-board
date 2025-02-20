@@ -15,20 +15,28 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "./ui/button";
 import { useKanbanContext } from "@/hooks/use-context";
-import { Section} from "@/types";
+import { Section } from "@/types";
 import { deleteTaskAndUpdateTaskOrder } from "@/lib/actions/task.action";
 
 const RemoveTask = ({ id, sectionId }: { id: string; sectionId: string }) => {
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
-  const { deleteTask } = useKanbanContext() as {
-    deleteTask: (id: string, data: Section) => void;
-  };
+  const kanbanContext = useKanbanContext();
   const { toast } = useToast();
+
+  if (!kanbanContext) {
+    throw new Error("Kanban context is null");
+  }
+
+  const {
+    deleteTask,
+  }: {
+    deleteTask: (id: string, data: Section) => void;
+  } = kanbanContext;
 
   const handleDeleteClick = () => {
     startTransition(async () => {
-      const res = await deleteTaskAndUpdateTaskOrder(id,sectionId);
+      const res = await deleteTaskAndUpdateTaskOrder(id, sectionId);
       if (!res.success) {
         toast({
           variant: "destructive",
