@@ -13,8 +13,10 @@ export async function reorderTask(
 ) {
   try {
     if ("sectionId" in over) {
+      // when task is dropped over another task
       await prisma.$transaction(async (tx) => {
         if (active.sectionId === over.sectionId) {
+          // when task is dropped over another task in the same column
           const filteredTasksOrder = sortedList
             .filter((task) => task.sectionId === over.sectionId)
             .map((task) => task.id);
@@ -23,6 +25,7 @@ export async function reorderTask(
             data: { tasksOrder: filteredTasksOrder },
           });
         } else {
+          // when task is dropped over another task of different column
           const filteredTasksOrder1 = sortedList
             .filter((task) => task.sectionId === active.sectionId)
             .map((task) => task.id);
@@ -44,6 +47,7 @@ export async function reorderTask(
         }
       });
     } else if ("tasksOrder" in over) {
+      // when task is dropped over another column
       await prisma.$transaction(async (tx) => {
         const filteredTasksOrder1 = sortedList
           .filter((task) => task.sectionId === active.sectionId)

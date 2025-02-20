@@ -11,25 +11,16 @@ export type Task = {
   user: z.infer<typeof userSchema>;
 };
 
-export type StructuredSection = {
+export type Section = {
   id: string;
   title: string;
-  createdAt: Date;
   tasksOrder: string[];
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+export type StructuredSection = Section & {
   tasks: Task[];
-  updatedAt: Date;
 };
 
-export type Section =  {
-  id: string;
-  title: string;
-  tasksOrder: string[];
-  createdAt: Date;
-  updatedAt: Date;
-};
-
-export type User = {
-  id: number,
-  name: string,
-  avatar: string
-}
+export type User = z.infer<typeof userSchema>;
