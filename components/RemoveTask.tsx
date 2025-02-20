@@ -56,7 +56,7 @@ const RemoveTask = ({ id, sectionId }: { id: string; sectionId: string }) => {
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogTrigger asChild>
-        <Trash2 />
+        <Trash2 size={18} />
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
