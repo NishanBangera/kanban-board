@@ -1,8 +1,9 @@
 "use client";
 import { KanbanContext } from "@/hooks/use-context";
+import { getAllSections } from "@/lib/actions/section.action";
 import { kanbanReducer } from "@/reducer/kanban-reducer";
-import { Section, StructuredSection, Task } from "@/types";
-import { useCallback, useReducer } from "react";
+import { Section, Task } from "@/types";
+import { useCallback, useEffect, useReducer, useState } from "react";
 
 export const users = [
   {
@@ -33,26 +34,19 @@ export const users = [
 ];
 
 const KanbanProvider = ({
-  data,
   children,
 }: Readonly<{
   children: React.ReactNode;
-  data: StructuredSection[];
 }>) => {
-  const tasks = data.map((section) => {
-    if (section.tasks.length > 0) {
-      const taskMap = new Map(section.tasks.map((task) => [task.id, task]));
-      const sortedTasks = section.tasksOrder.map((id) => taskMap.get(id)) as Task[]
-      return sortedTasks;
-    }
-    return []
-  });
+  const [sections, setSections] = useState<Section[]>([])
+  const [tasks, setTasks] = useState<Task[]>([])
+ 
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const sections = data.map(({ tasks, ...rest }) => rest);
+  
   const initialState = {
-    sections,
-    tasks: tasks.flat(),
+    sections: [] as Section[],
+    tasks: [] as Task[],
     users,
   };
   const [state, dispatch] = useReducer(kanbanReducer, initialState);
@@ -68,8 +62,12 @@ const KanbanProvider = ({
     dispatch({ type: "REORDER_TASK", payload: tasks });
   }, []);
 
-  const deleteTask = useCallback((id: string, data: undefined | Task[]) => {
+  const deleteTask = useCallback((id: string, data: Section) => {
     dispatch({ type: "DELETE_TASK", payload: { id, data } });
+  }, []);
+
+  const updateTask = useCallback((task:Task) => {
+    dispatch({ type: "UPDATE_TASK", payload:  task });
   }, []);
 
   const addNewSection = useCallback((section: Section) => {
@@ -84,6 +82,27 @@ const KanbanProvider = ({
     dispatch({ type: "UPDATE_SECTION", payload: section });
   }, []);
 
+  useEffect(() => {
+    (async () => {
+      const res = await getAllSections();
+      const computedTasks = res
+        .map((section) => {
+          if (section.tasks.length > 0) {
+            const taskMap = new Map(section.tasks.map((task) => [task.id, task]));
+            const sortedTasks = section.tasksOrder.map((id) => taskMap.get(id)) as Task[];
+            return sortedTasks;
+          }
+          return [];
+        })
+        .flat();
+      const computedSections = res.map(({ tasks, ...rest }) => rest);
+      dispatch({
+        type: "SET_INITIAL_DATA",
+        payload: { sections: computedSections, tasks: computedTasks },
+      });
+    })();
+  }, []);
+
   return (
     <KanbanContext.Provider
       value={{
@@ -93,6 +112,7 @@ const KanbanProvider = ({
         updateSection,
         addNewTask,
         deleteTask,
+        updateTask,
         reorderTaskState
       }}
     >

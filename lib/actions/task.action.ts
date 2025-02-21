@@ -1,7 +1,7 @@
 "use server";
 
 import { z } from "zod";
-import { taskActionSchema, userSchema } from "../validators";
+import { taskActionSchema, updatedTaskActionSchema } from "../validators";
 import { prisma } from "@/db/prisma";
 import { formatError } from "../utils";
 import { Section, Task } from "@/types";
@@ -74,9 +74,7 @@ export async function reorderTask(
   }
 }
 
-export async function addTask(
-  data: z.infer<typeof taskActionSchema> & { user: z.infer<typeof userSchema> }
-) {
+export async function addTask(data: z.infer<typeof taskActionSchema>) {
   try {
     const newTask = taskActionSchema.parse(data);
     const response = await prisma.$transaction(async (tx) => {
@@ -118,10 +116,25 @@ export async function addTask(
   }
 }
 
-export async function deleteTaskAndUpdateTaskOrder(
-  id: string,
-  sectionId: string
-) {
+export async function updateTaskDb(data: z.infer<typeof taskActionSchema>, id: string) {
+  try {
+    const validatedTask = updatedTaskActionSchema.parse({...data,id});
+    
+    const updatedTask = await prisma.task.update({
+      where: { id: validatedTask.id },
+      data: {title: validatedTask.title,tag: validatedTask.tag,dueDate:validatedTask.dueDate, user: validatedTask.user },
+    });
+    return {
+      success: true,
+      data: updatedTask,
+      message: "Task updated successfully",
+    };
+  } catch (error) {
+    return { success: false, message: formatError(error) };
+  }
+}
+
+export async function deleteTaskDb(id: string, sectionId: string) {
   try {
     const { title, data } = await prisma.$transaction(async (tx) => {
       // Fetch the current section

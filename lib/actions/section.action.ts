@@ -9,7 +9,7 @@ import { StructuredSection } from "@/types";
 
 export async function getAllSections() {
   const data = await prisma.section.findMany({
-    orderBy: {createdAt: "asc"},
+    orderBy: { createdAt: "asc" },
     include: {
       tasks: true,
     },
@@ -32,40 +32,39 @@ export async function addSection(data: z.infer<typeof addSectionSchema>) {
   }
 }
 
-export async function deleteOrUpdateSection(
-  prevState: unknown,
-  formData: FormData
-) {
+export async function deleteSectionDb(sectionId: string) {
   try {
-    if (formData.get("action") === "update") {
-      const data = updateSectionSchema.parse({
-        sectionId: formData.get("sectionId"),
-        title: formData.get("title"),
-      });
+    const deletedSection = await prisma.section.delete({
+      where: { id: sectionId },
+    });
 
-      const updatedSection = await prisma.section.update({
-        where: { id: data.sectionId },
-        data: { title: data.title },
-      });
+    return {
+      success: true,
+      data: deletedSection,
+      message: `${deletedSection.title} section and all its related tasks deleted successfully`,
+    };
+  } catch (error) {
+    return { success: false, message: formatError(error) };
+  }
+}
 
-      return {
-        success: true,
-        data: updatedSection,
-        message: "Section updated successfully",
-      };
-    } else if (formData.get("action") === "delete") {
-      const sectionId = formData.get("sectionId") as string;
+export async function updateSectionDb(prevState: unknown, formData: FormData) {
+  try {
+    const data = updateSectionSchema.parse({
+      sectionId: formData.get("sectionId"),
+      title: formData.get("title"),
+    });
 
-      const deletedSection = await prisma.section.delete({
-        where: { id: sectionId },
-      });
+    const updatedSection = await prisma.section.update({
+      where: { id: data.sectionId },
+      data: { title: data.title },
+    });
 
-      return {
-        success: true,
-        data: deletedSection,
-        message: `${deletedSection.title} section and all its related tasks deleted successfully`,
-      };
-    }
+    return {
+      success: true,
+      data: updatedSection,
+      message: "Section updated successfully",
+    };
   } catch (error) {
     return { success: false, message: formatError(error) };
   }

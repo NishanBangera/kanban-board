@@ -34,7 +34,7 @@ const DragAndDrop = () => {
     tasks: Task[];
     reorderTaskState: (tasks: Task[]) => void;
   } = kanbanContext;
-  
+
   const onDragStart = (event: DragStartEvent) => {
     setActiveTask(event.active.data.current as Task);
   };

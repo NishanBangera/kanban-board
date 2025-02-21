@@ -14,29 +14,52 @@ interface Action {
 
 export const kanbanReducer = (state: State, action: Action): State => {
   switch (action.type) {
-    case "REORDER_TASK": {
-      const reorderedTasks = action.payload
-      
+    case "SET_INITIAL_DATA": {
+      const {sections, tasks} = action.payload
+
       return {
         ...state,
-        tasks: reorderedTasks
+        sections,
+        tasks
       }
+    }
+
+    case "REORDER_TASK": {
+      const reorderedTasks = action.payload;
+
+      return {
+        ...state,
+        tasks: reorderedTasks,
+      };
     }
 
     case "ADD_TASK": {
       const { task, tasksOrder } = action.payload;
-      const modifiedSections = state.sections.map(
-        (section) => {
-          if(section.id === task.sectionId){
-            return {...section, tasksOrder}
-          }
-          return section
+      const modifiedSections = state.sections.map((section) => {
+        if (section.id === task.sectionId) {
+          return { ...section, tasksOrder };
         }
-      ) as Section[];
+        return section;
+      }) as Section[];
       return {
         ...state,
         tasks: [...state.tasks, task],
         sections: modifiedSections,
+      };
+    }
+
+    case "UPDATE_TASK": {
+      const task = action.payload;
+      const modifiedTasks = state.tasks.map((item) => {
+        if (task.id === item.id) {
+          return task;
+        }
+        return item;
+      });
+
+      return {
+        ...state,
+        tasks: modifiedTasks,
       };
     }
 
@@ -65,7 +88,7 @@ export const kanbanReducer = (state: State, action: Action): State => {
     case "UPDATE_SECTION": {
       const { id, title } = action.payload;
       const updatedSections = state.sections.map((section) => {
-        if (section.id === id) return { ...section,id, title };
+        if (section.id === id) return { ...section, id, title };
         return section;
       });
       return {

@@ -4,19 +4,21 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useActionState, useEffect, useState } from "react";
 import { useFormStatus } from "react-dom";
-import { deleteOrUpdateSection } from "@/lib/actions/section.action";
-import { Ellipsis } from "lucide-react";
+import { updateSectionDb } from "@/lib/actions/section.action";
+import { Check, Ellipsis, Loader } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { useToast } from "@/hooks/use-toast";
 import { useKanbanContext } from "@/hooks/use-context";
 import { Section } from "@/types";
+import RemoveItem from "./RemoveTaskOrSection";
 
 const RemoveAndUpdateSection = ({ sectionId }: { sectionId: string }) => {
   const [open, setOpen] = useState(false);
-  const [actionType, setActionType] = useState<"update" | "delete" | null>(
-    null
-  );
-  const [response, action] = useActionState(deleteOrUpdateSection, null);
+  const [rename, setRename] = useState("");
+
+  const [response, action] = useActionState(updateSectionDb, null);
+
+  const { pending } = useFormStatus();
 
   const { toast } = useToast();
 
@@ -27,51 +29,14 @@ const RemoveAndUpdateSection = ({ sectionId }: { sectionId: string }) => {
   }
 
   const {
-    deleteSection,
     updateSection,
   }: {
-    deleteSection: (id: string) => void;
     updateSection: (section: Section) => void;
   } = kanbanContext;
 
-  const RenameButton = () => {
-    const { pending } = useFormStatus();
-
-    return (
-      <Button
-        disabled={pending}
-        name="action"
-        value="update"
-        variant="default"
-        onClick={() => setActionType("update")}
-      >
-        {pending ? "Updating..." : "Rename"}
-      </Button>
-    );
-  };
-
-  const DeleteButton = () => {
-    const { pending } = useFormStatus();
-
-    return (
-      <Button
-        disabled={pending}
-        name="action"
-        value="delete"
-        variant="destructive"
-        onClick={() => setActionType("delete")}
-      >
-        {pending ? "Deleting..." : "Delete"}
-      </Button>
-    );
-  };
-
   useEffect(() => {
     if (response?.success) {
-      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-      actionType === "delete"
-        ? deleteSection(sectionId)
-        : updateSection(response.data!);
+      updateSection(response.data!);
 
       toast({
         description: response.message,
@@ -91,23 +56,34 @@ const RemoveAndUpdateSection = ({ sectionId }: { sectionId: string }) => {
       <PopoverTrigger>
         <Ellipsis onClick={() => setOpen(true)} />
       </PopoverTrigger>
-      <PopoverContent>
+      <PopoverContent className="w-64 p-4 space-y-3">
         <form action={action}>
           <input type="hidden" name="sectionId" value={sectionId} />
-          <input type="hidden" name="action" value={actionType ?? ""} />
-          <div className="space-y-6">
-            <div className="flex space-x-3">
-              <Input
-                name="title"
-                type="text"
-                minLength={3}
-                placeholder="Rename Section"
-                required={actionType === "update"}
-              />
-              <RenameButton />
-            </div>
-            <div>
-              <DeleteButton />
+          <div className="flex flex-col gap-3">
+            <span className="text-sm font-medium text-muted-foreground">
+              Rename
+            </span>
+            <Input
+              placeholder="Rename Section"
+              name="title"
+              value={rename}
+              onChange={(e) => setRename(e.target.value)}
+            />
+            <div className="flex justify-between gap-2">
+              <Button
+                variant="default"
+                disabled={rename.length > 3 ? false : true}
+                className="flex-1"
+                type="submit"
+              >
+                {pending ? (
+                  <Loader className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Check className="w-4 h-4 mr-2" />
+                )}{" "}
+                Save
+              </Button>
+              <RemoveItem sectionId={sectionId} title="section" />
             </div>
           </div>
         </form>

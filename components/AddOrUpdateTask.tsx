@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 import { SubmitHandler, useForm } from "react-hook-form";
 import {
@@ -26,30 +27,64 @@ import { z } from "zod";
 import { addFormTaskSchema } from "@/lib/validators";
 import { Button } from "./ui/button";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { addTask } from "@/lib/actions/task.action";
+import { addTask, updateTaskDb } from "@/lib/actions/task.action";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 import { useKanbanContext } from "@/hooks/use-context";
 import { Task } from "@/types";
 
-const AddTask = ({ sectionId }: { sectionId: string }) => {
+const AddOrUpdateTask = ({
+  sectionId,
+  text,
+  task,
+  type,
+  handleOpen
+}: {
+  sectionId: string;
+  text?: string;
+  task?: Task;
+  type: "create" | "update";
+  handleOpen?: () => void
+}) => {
   const [open, setOpen] = useState(false);
 
+  const {
+    createdAt,
+    id,
+    user,
+    dueDate,
+    sectionId: sam,
+    ...formTask
+  } = task || {};
   const kanbanContext = useKanbanContext();
   if (!kanbanContext) {
     throw new Error("Kanban context is null");
   }
-  const { addNewTask } : {addNewTask: (data: { task: Task; tasksOrder: string[] }) => void;} = kanbanContext;
+  const {
+    addNewTask,
+    updateTask,
+  }: {
+    addNewTask: (data: { task: Task; tasksOrder: string[] }) => void;
+    updateTask: (task: Task) => void;
+  } = kanbanContext;
   const { toast } = useToast();
 
-  const date = new Date();
-  const formattedDate = `${date.getFullYear()}-${
-    date.getMonth() > 9 ? date.getMonth() + 1 : "0" + (date.getMonth() + 1)
-  }-${date.getDate() > 9 ? date.getDate() : "0" + date.getDate()}`;
+  function formattedDate(date: Date) {
+    return `${date.getFullYear()}-${
+      date.getMonth() > 9 ? date.getMonth() + 1 : "0" + (date.getMonth() + 1)
+    }-${date.getDate() > 9 ? date.getDate() : "0" + date.getDate()}`;
+  }
 
-  const form = useForm({
+  const form = useForm<z.infer<typeof addFormTaskSchema>>({
     resolver: zodResolver(addFormTaskSchema),
-    defaultValues: defaultAddTask,
+    defaultValues:
+      task && type === "update"
+        ? {
+            ...formTask,
+            user: String(task.user.id),
+            dueDate: formattedDate(new Date(task.dueDate)),
+          }
+        : defaultAddTask,
   });
 
   // Submit form handlerr
@@ -59,13 +94,18 @@ const AddTask = ({ sectionId }: { sectionId: string }) => {
     const user = users.find((user) => user.id === Number(values.user))!;
 
     const data = {
-      ...values,
+      title: values.title,
+      tag: values.tag,
       dueDate: new Date(values.dueDate),
       user,
       sectionId,
     };
 
-    const res = await addTask(data);
+    const res =
+      type === "update" && task
+        ? await updateTaskDb(data, task.id)
+        : await addTask(data);
+
     if (!res.success) {
       return toast({
         variant: "destructive",
@@ -73,9 +113,14 @@ const AddTask = ({ sectionId }: { sectionId: string }) => {
       });
     }
     if (res.data) {
-      addNewTask(res.data as { task: Task; tasksOrder: string[] });
+      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+      type === "update" && task
+        ? updateTask(res.data as Task)
+        : addNewTask(res.data as { task: Task; tasksOrder: string[] });
     }
     setOpen(false);
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+    handleOpen && handleOpen()
     form.reset();
     toast({
       description: res.message,
@@ -85,10 +130,19 @@ const AddTask = ({ sectionId }: { sectionId: string }) => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Plus
-          className="w-4 h-4 cursor-pointer"
-          onClick={() => setOpen(true)}
-        />
+        {type === "update" ? (
+          <Button>Update</Button>
+        ) : (
+          <Button variant="link" className="hover:no-underline">
+            <Plus
+              className={`w-4 h-4 cursor-pointer ${
+                text ? "text-slate-400" : ""
+              }`}
+              onClick={() => setOpen(true)}
+            />
+            {text && <p className="text-slate-400">{text}</p>}
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <Form {...form}>
@@ -131,7 +185,7 @@ const AddTask = ({ sectionId }: { sectionId: string }) => {
                       <Input
                         type="date"
                         placeholder="Select Due Date"
-                        min={formattedDate}
+                        min={formattedDate(new Date())}
                         {...field}
                       />
                     </FormControl>
@@ -185,4 +239,4 @@ const AddTask = ({ sectionId }: { sectionId: string }) => {
   );
 };
 
-export default AddTask;
+export default AddOrUpdateTask;

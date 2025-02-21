@@ -1,6 +1,6 @@
 "use client";
 
-import { Trash2 } from "lucide-react";
+import { Loader, Trash2 } from "lucide-react";
 import { useState, useTransition } from "react";
 import {
   AlertDialog,
@@ -16,9 +16,18 @@ import { useToast } from "@/hooks/use-toast";
 import { Button } from "./ui/button";
 import { useKanbanContext } from "@/hooks/use-context";
 import { Section } from "@/types";
-import { deleteTaskAndUpdateTaskOrder } from "@/lib/actions/task.action";
+import { deleteTaskDb } from "@/lib/actions/task.action";
+import { deleteSectionDb } from "@/lib/actions/section.action";
 
-const RemoveTask = ({ id, sectionId }: { id: string; sectionId: string }) => {
+const RemoveTaskOrSection = ({
+  taskId,
+  sectionId,
+  title,
+}: {
+  taskId?: string;
+  sectionId: string;
+  title: "task" | "section";
+}) => {
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const kanbanContext = useKanbanContext();
@@ -30,13 +39,18 @@ const RemoveTask = ({ id, sectionId }: { id: string; sectionId: string }) => {
 
   const {
     deleteTask,
+    deleteSection,
   }: {
     deleteTask: (id: string, data: Section) => void;
+    deleteSection: (id: string) => void;
   } = kanbanContext;
 
   const handleDeleteClick = () => {
     startTransition(async () => {
-      const res = await deleteTaskAndUpdateTaskOrder(id, sectionId);
+      const res =
+        title === "section"
+          ? await deleteSectionDb(sectionId)
+          : await deleteTaskDb(taskId!, sectionId);
       if (!res.success) {
         toast({
           variant: "destructive",
@@ -44,7 +58,9 @@ const RemoveTask = ({ id, sectionId }: { id: string; sectionId: string }) => {
         });
       } else {
         // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-        deleteTask(id, res.data!);
+        title === "section"
+          ? deleteSection(sectionId)
+          : deleteTask(taskId!, res.data!);
         setOpen(false);
         toast({
           description: res.message,
@@ -56,14 +72,16 @@ const RemoveTask = ({ id, sectionId }: { id: string; sectionId: string }) => {
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogTrigger asChild>
-        <Trash2 size={18} />
+        <Button variant="destructive" className="flex-1" type="button">
+          <Trash2 className="w-4 h-4 mr-2" />
+          Delete
+        </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
           <AlertDialogDescription>
-            This action cannot be undone. This will permanently delete the
-            task.
+            This action cannot be undone. This will permanently delete the task.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
@@ -74,7 +92,12 @@ const RemoveTask = ({ id, sectionId }: { id: string; sectionId: string }) => {
             disabled={isPending}
             onClick={handleDeleteClick}
           >
-            {isPending ? "Deleting..." : "Delete"}
+            {isPending ? (
+              <Loader className="w-4 h-4 animate-spin" />
+            ) : (
+              <Trash2 className="w-4 h-4 mr-2" />
+            )}{" "}
+            Delete
           </Button>
         </AlertDialogFooter>
       </AlertDialogContent>
@@ -82,4 +105,4 @@ const RemoveTask = ({ id, sectionId }: { id: string; sectionId: string }) => {
   );
 };
 
-export default RemoveTask;
+export default RemoveTaskOrSection;

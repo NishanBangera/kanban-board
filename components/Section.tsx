@@ -1,6 +1,6 @@
 "use client";
 import TaskCard from "./TaskCard";
-import AddTask from "./AddTask";
+import AddOrUpdateTask from "./AddOrUpdateTask";
 import { Section as SectionType, Task } from "@/types";
 import RemoveAndUpdateSection from "./RemoveAndUpdateSection";
 import { useDroppable } from "@dnd-kit/core";
@@ -28,20 +28,21 @@ const Section = ({ section }: { section: SectionType }) => {
       <div className="flex justify-between">
         <h2 className="font-semibold self-center">{section.title}</h2>
         <div className="flex gap-3 items-center">
-          <AddTask sectionId={section.id} />
+          <AddOrUpdateTask type="create" sectionId={section.id} />
           <RemoveAndUpdateSection sectionId={section.id} />
         </div>
       </div>
 
       <div
         ref={setNodeRef}
-        className="flex flex-1 flex-col rounded-lg bg-gray-200 "
+        className="flex flex-1 flex-col rounded-lg bg-gray-100 "
       >
         <SortableContext items={sectionTaskIds}>
           {sectionTasks.map((task: Task) => (
             <TaskCard key={task.id} task={task} />
           ))}
         </SortableContext>
+        <AddOrUpdateTask sectionId={section.id} text="Add task" type="create" />
       </div>
     </div>
   );

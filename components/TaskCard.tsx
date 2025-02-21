@@ -6,31 +6,27 @@ import { Badge } from "./ui/badge";
 import type { Task } from "@/types";
 import { CSS } from "@dnd-kit/utilities";
 import { useSortable } from "@dnd-kit/sortable";
-import RemoveTask from "./RemoveTask";
+import RemoveOrUpdateTask from "./RemoveOrUpdateTask";
+import { isAfter, isToday, isTomorrow, isYesterday } from "date-fns";
 
 const TaskCard = ({ task }: { task: Task }) => {
   const dueDate = new Date(task.dueDate);
   const presentDate = new Date();
-  const formattedDate =
-    dueDate.getDate() === presentDate.getDate()
-      ? "Today"
-      : dueDate.getDate() === presentDate.getDate() - 1
-      ? "Yesterday"
-      : dueDate.getDate() === presentDate.getDate() + 1
-      ? "Tomorrow"
-      : dueDate.toLocaleString("en-US", {
-          day: "numeric",
-          month: "short",
-        });
-  const formattedDateColor =
-    dueDate.getDate() === presentDate.getDate()
-      ? "text-gray-900"
-      : dueDate.getDate() < presentDate.getDate()
-      ? "text-red-700"
-      : dueDate.getDate() === presentDate.getDate() + 1
-      ? "text-blue-800"
-      : "text-slate-400";
-
+  const formattedDate = isToday(dueDate)
+    ? "Today"
+    : isYesterday(dueDate)
+    ? "Yesterday"
+    : isTomorrow(dueDate)
+    ? "Tomorrow"
+    : dueDate.toLocaleString("en-US", {
+        day: "numeric",
+        month: "short",
+      });
+  const formattedDateColor = isToday(dueDate)
+    ? "text-gray-900"
+    : isAfter(presentDate, dueDate)
+    ? "text-red-700"
+    : "text-blue-800";
   const {
     attributes,
     listeners,
@@ -68,7 +64,7 @@ const TaskCard = ({ task }: { task: Task }) => {
       >
         <div className="flex justify-between">
           <CardTitle className="text-sm">{task.title}</CardTitle>
-          <RemoveTask id={task.id} sectionId={task.sectionId} />
+          <RemoveOrUpdateTask task={task} sectionId={task.sectionId} />
         </div>
         <CardContent className="p-2">
           <div className="flex justify-between items-center">
