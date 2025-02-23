@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 import { SubmitHandler, useForm } from "react-hook-form";
 import {

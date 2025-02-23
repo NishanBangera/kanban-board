@@ -20,7 +20,7 @@ import { useToast } from "@/hooks/use-toast";
 import { addSection } from "@/lib/actions/section.action";
 import { useState } from "react";
 import { useKanbanContext } from "@/hooks/use-context";
-import { Section, Task, User } from "@/types";
+import { Section, Task } from "@/types";
 
 const AddSection = () => {
   const { toast } = useToast();
