@@ -20,7 +20,7 @@ import { useToast } from "@/hooks/use-toast";
 import { addSection } from "@/lib/actions/section.action";
 import { useState } from "react";
 import { useKanbanContext } from "@/hooks/use-context";
-import { Section } from "@/types";
+import { Section, Task, User } from "@/types";
 
 const AddSection = () => {
   const { toast } = useToast();
@@ -31,8 +31,22 @@ const AddSection = () => {
     throw new Error("Kanban context is null");
   }
 
-  const { addNewSection }: { addNewSection: (section: Section) => void } =
-    kanbanContext;
+  const {
+    addNewSection,
+    tempAddNewSection,
+    sections,
+    tasks,
+    rollbackState,
+  }: {
+    addNewSection: (section: Section, tempSectionId: string) => void;
+    tempAddNewSection: (section: Section) => void;
+    sections: Section[];
+    tasks: Task[];
+    rollbackState: (data: {
+      sections: Section[];
+      tasks: Task[];
+    }) => void;
+  } = kanbanContext;
   const [open, setOpen] = useState(false);
 
   const form = useForm({
@@ -44,15 +58,28 @@ const AddSection = () => {
   const onSubmit: SubmitHandler<z.infer<typeof addSectionSchema>> = async (
     values
   ) => {
-    const res = await addSection(values);
+    const tempSectionId = crypto.randomUUID();
+    const prevState = {
+      sections: [...sections],
+      tasks: [...tasks]
+    };
+    tempAddNewSection({
+      ...values,
+      id: tempSectionId,
+      tasksOrder: [],
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
     setOpen(false);
     form.reset();
+    toast({
+      description: `${values.title} section has been added successfully`,
+    });
+    const res = await addSection(values);
     if (res.success) {
-      addNewSection(res.data!);
-      return toast({
-        description: res.message,
-      });
+      addNewSection(res.data!,tempSectionId);
     } else {
+      rollbackState(prevState);
       return toast({
         variant: "destructive",
         description: res.message,

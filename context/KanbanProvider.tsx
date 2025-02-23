@@ -3,7 +3,7 @@ import { KanbanContext } from "@/hooks/use-context";
 import { getAllSections } from "@/lib/actions/section.action";
 import { kanbanReducer } from "@/reducer/kanban-reducer";
 import { Section, Task } from "@/types";
-import { useCallback, useEffect, useReducer, useState } from "react";
+import { useCallback, useEffect, useReducer } from "react";
 
 export const users = [
   {
@@ -38,12 +38,6 @@ const KanbanProvider = ({
 }: Readonly<{
   children: React.ReactNode;
 }>) => {
-  const [sections, setSections] = useState<Section[]>([])
-  const [tasks, setTasks] = useState<Task[]>([])
- 
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  
   const initialState = {
     sections: [] as Section[],
     tasks: [] as Task[],
@@ -51,9 +45,13 @@ const KanbanProvider = ({
   };
   const [state, dispatch] = useReducer(kanbanReducer, initialState);
 
+  const tempAddNewTask = useCallback((data: { task: Task }) => {
+    dispatch({ type: "TEMP_ADD_TASK", payload: data });
+  }, []);
+
   const addNewTask = useCallback(
-    (data: { task: Task; tasksOrder: string[] }) => {
-      dispatch({ type: "ADD_TASK", payload: data });
+    (data: { task: Task; tasksOrder: string[] }, tempCreateTaskId: string) => {
+      dispatch({ type: "ADD_TASK", payload: { ...data, tempCreateTaskId } });
     },
     []
   );
@@ -62,39 +60,54 @@ const KanbanProvider = ({
     dispatch({ type: "REORDER_TASK", payload: tasks });
   }, []);
 
-  const deleteTask = useCallback((id: string, data: Section) => {
-    dispatch({ type: "DELETE_TASK", payload: { id, data } });
+  const deleteTask = useCallback((task:Task) => {
+    dispatch({ type: "DELETE_TASK", payload: task });
   }, []);
 
-  const updateTask = useCallback((task:Task) => {
-    dispatch({ type: "UPDATE_TASK", payload:  task });
+  const updateTask = useCallback((task: Task) => {
+    dispatch({ type: "UPDATE_TASK", payload: task });
   }, []);
 
-  const addNewSection = useCallback((section: Section) => {
-    dispatch({ type: "ADD_SECTION", payload: section });
+  const tempAddNewSection = useCallback((section: Section) => {
+    dispatch({ type: "TEMP_ADD_SECTION", payload: section });
+  }, []);
+
+  const addNewSection = useCallback((section: Section, tempSectionId: string) => {
+    dispatch({ type: "ADD_SECTION", payload: {...section, tempSectionId} });
+  }, []);
+
+  const updateSection = useCallback((title: string, sectionId: string) => {
+    dispatch({ type: "UPDATE_SECTION", payload: {title, sectionId} });
   }, []);
 
   const deleteSection = useCallback((id: string) => {
     dispatch({ type: "DELETE_SECTION", payload: id });
   }, []);
 
-  const updateSection = useCallback((section: Section) => {
-    dispatch({ type: "UPDATE_SECTION", payload: section });
+  const rollbackState = useCallback((data: {sections?: Section[], tasks: Task[]}) => {
+    dispatch({ type: "ROLLBACK_STATE", payload: data });
   }, []);
 
+
   useEffect(() => {
+    
     (async () => {
       const res = await getAllSections();
       const computedTasks = res
         .map((section) => {
           if (section.tasks.length > 0) {
-            const taskMap = new Map(section.tasks.map((task) => [task.id, task]));
-            const sortedTasks = section.tasksOrder.map((id) => taskMap.get(id)) as Task[];
+            const taskMap = new Map(
+              section.tasks.map((task) => [task.id, task])
+            );
+            const sortedTasks = section.tasksOrder.map((id) =>
+              taskMap.get(id)
+            ) as Task[];
             return sortedTasks;
           }
           return [];
         })
         .flat();
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const computedSections = res.map(({ tasks, ...rest }) => rest);
       dispatch({
         type: "SET_INITIAL_DATA",
@@ -107,13 +120,16 @@ const KanbanProvider = ({
     <KanbanContext.Provider
       value={{
         ...state,
+        tempAddNewSection,
         addNewSection,
-        deleteSection,
         updateSection,
+        deleteSection,
+        tempAddNewTask,
         addNewTask,
         deleteTask,
         updateTask,
-        reorderTaskState
+        reorderTaskState,
+        rollbackState
       }}
     >
       {children}

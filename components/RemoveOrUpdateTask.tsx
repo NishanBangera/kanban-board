@@ -28,7 +28,7 @@ const RemoveOrUpdateTask = ({
         <div className="flex justify-between gap-2">
           <AddOrUpdateTask task={task} sectionId={sectionId} type="update" handleOpen={handleOpen}  />
           <RemoveTaskOrSection
-            taskId={task.id}
+            task={task}
             sectionId={sectionId}
             title="task"
           />

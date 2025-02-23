@@ -48,16 +48,13 @@ export async function deleteSectionDb(sectionId: string) {
   }
 }
 
-export async function updateSectionDb(prevState: unknown, formData: FormData) {
+export async function updateSectionDb(data : z.infer<typeof updateSectionSchema>) {
   try {
-    const data = updateSectionSchema.parse({
-      sectionId: formData.get("sectionId"),
-      title: formData.get("title"),
-    });
+    const validatedData = updateSectionSchema.parse(data);
 
     const updatedSection = await prisma.section.update({
-      where: { id: data.sectionId },
-      data: { title: data.title },
+      where: { id: validatedData.sectionId },
+      data: { title: validatedData.title },
     });
 
     return {

@@ -5,6 +5,7 @@ import { Section as SectionType, Task } from "@/types";
 import {
   DndContext,
   DragEndEvent,
+  DragOverEvent,
   DragOverlay,
   DragStartEvent,
   PointerSensor,
@@ -15,9 +16,13 @@ import TaskCard from "./TaskCard";
 import { useKanbanContext } from "@/hooks/use-context";
 import { arrayMove } from "@dnd-kit/sortable";
 import { reorderTask } from "@/lib/actions/task.action";
+import { useToast } from "@/hooks/use-toast";
 
 const DragAndDrop = () => {
   const [activeTask, setActiveTask] = useState<Task | null>(null);
+  const [prevState, setPrevState] = useState<Task[] | null>(null);
+
+  const { toast } = useToast();
 
   const kanbanContext = useKanbanContext();
 
@@ -29,17 +34,19 @@ const DragAndDrop = () => {
     sections,
     tasks,
     reorderTaskState,
+    rollbackState,
   }: {
     sections: SectionType[];
     tasks: Task[];
     reorderTaskState: (tasks: Task[]) => void;
+    rollbackState: (data: { tasks: Task[] }) => void;
   } = kanbanContext;
 
   const onDragStart = (event: DragStartEvent) => {
     setActiveTask(event.active.data.current as Task);
+    if (!prevState) setPrevState(tasks);
   };
-
-  const onDragOver = async (event: DragEndEvent) => {
+  const onDragOver = async (event: DragOverEvent) => {
     const { active, over } = event;
 
     if (!over || active.id === over.id) return;
@@ -51,21 +58,49 @@ const DragAndDrop = () => {
     if ("sectionId" in activeTaskData && "sectionId" in overTaskData) {
       const activeIndex = tasks.findIndex((t) => t.id === active.id);
       const overIndex = tasks.findIndex((t) => t.id === over.id);
+      const deepCopy = JSON.parse(JSON.stringify(tasks));
 
-      tasks[activeIndex].sectionId = tasks[overIndex].sectionId;
-
-      const dndSortedList: Task[] = arrayMove(tasks, activeIndex, overIndex);
-      reorderTaskState(dndSortedList);
-      await reorderTask(activeTaskData, overTaskData, dndSortedList);
-
-      // Dropping a task over another column
-    } else if ("tasksOrder" in overTaskData) {
+      deepCopy[activeIndex].sectionId = deepCopy[overIndex].sectionId;
+      const dndSortedList: Task[] = arrayMove(deepCopy, activeIndex, overIndex);
+      setTimeout(() => reorderTaskState(dndSortedList), 0);
+    }
+    // Dropping a task over another column
+    else if ("tasksOrder" in overTaskData) {
       const activeIndex = tasks.findIndex((t) => t.id === active.id);
+
       tasks[activeIndex].sectionId = overTaskData.id;
       const dndSortedList: Task[] = arrayMove(tasks, activeIndex, activeIndex);
-
-      await reorderTask(activeTaskData, overTaskData, dndSortedList);
+      reorderTaskState(dndSortedList);
     }
+  };
+
+  const onDragEnd = async (event: DragEndEvent) => {
+    const { over } = event;
+
+    if (!over || !activeTask || !prevState) return;
+
+    // Fetch dropped index location
+    const hoveredItemIndex = tasks.findIndex(
+      (task) => task.id === activeTask.id
+    );
+
+    // Based on dropped position, fetch the item
+    let hoveredItem: Task | SectionType;
+    if (hoveredItemIndex === -1) {
+      hoveredItem = over.data.current as SectionType;
+    } else {
+      hoveredItem = prevState[hoveredItemIndex];
+    }
+
+    const res = await reorderTask(activeTask!, hoveredItem, tasks);
+    if (!res.success) {
+      rollbackState({ tasks: prevState });
+      toast({
+        variant: "destructive",
+        description: res.message,
+      });
+    }
+    setPrevState(null) // set prevState to null only when we get db response
   };
 
   const sensors = useSensors(
@@ -80,11 +115,13 @@ const DragAndDrop = () => {
     <DndContext
       sensors={sensors}
       onDragStart={onDragStart}
+      onDragEnd={onDragEnd}
       onDragOver={onDragOver}
     >
       {sections.map((section) => (
         <Section key={section.id} section={section} />
       ))}
+
       <DragOverlay>
         {activeTask ? <TaskCard task={activeTask} /> : null}
       </DragOverlay>

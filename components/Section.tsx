@@ -29,7 +29,7 @@ const Section = ({ section }: { section: SectionType }) => {
         <h2 className="font-semibold self-center">{section.title}</h2>
         <div className="flex gap-3 items-center">
           <AddOrUpdateTask type="create" sectionId={section.id} />
-          <RemoveAndUpdateSection sectionId={section.id} />
+          <RemoveAndUpdateSection section={section} />
         </div>
       </div>
 

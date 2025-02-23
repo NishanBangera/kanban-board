@@ -12,24 +12,22 @@ export async function reorderTask(
   sortedList: Task[]
 ) {
   try {
+    const filterActiveTaskSection = sortedList
+      .filter((task) => task.sectionId === active.sectionId)
+      .map((task) => task.id);
     if ("sectionId" in over) {
       // when task is dropped over another task
+
       await prisma.$transaction(async (tx) => {
         if (active.sectionId === over.sectionId) {
           // when task is dropped over another task in the same column
-          const filteredTasksOrder = sortedList
-            .filter((task) => task.sectionId === over.sectionId)
-            .map((task) => task.id);
           return await tx.section.update({
             where: { id: over.sectionId },
-            data: { tasksOrder: filteredTasksOrder },
+            data: { tasksOrder: filterActiveTaskSection },
           });
         } else {
           // when task is dropped over another task of different column
-          const filteredTasksOrder1 = sortedList
-            .filter((task) => task.sectionId === active.sectionId)
-            .map((task) => task.id);
-          const filteredTasksOrder2 = sortedList
+          const pushOverTaskSection = sortedList
             .filter((task) => task.sectionId === over.sectionId)
             .map((task) => task.id);
           await tx.task.update({
@@ -38,21 +36,18 @@ export async function reorderTask(
           });
           await tx.section.update({
             where: { id: active.sectionId },
-            data: { tasksOrder: filteredTasksOrder1 },
+            data: { tasksOrder: filterActiveTaskSection },
           });
           await tx.section.update({
             where: { id: over.sectionId },
-            data: { tasksOrder: filteredTasksOrder2 },
+            data: { tasksOrder: pushOverTaskSection },
           });
         }
       });
     } else if ("tasksOrder" in over) {
       // when task is dropped over another column
       await prisma.$transaction(async (tx) => {
-        const filteredTasksOrder1 = sortedList
-          .filter((task) => task.sectionId === active.sectionId)
-          .map((task) => task.id);
-        const filteredTasksOrder2 = sortedList
+        const pushOverTaskSection = sortedList
           .filter((task) => task.sectionId === over.id)
           .map((task) => task.id);
         await tx.task.update({
@@ -61,14 +56,17 @@ export async function reorderTask(
         });
         await tx.section.update({
           where: { id: active.sectionId },
-          data: { tasksOrder: filteredTasksOrder1 },
+          data: { tasksOrder: filterActiveTaskSection },
         });
         await tx.section.update({
           where: { id: over.id },
-          data: { tasksOrder: filteredTasksOrder2 },
+          data: { tasksOrder: pushOverTaskSection },
         });
       });
     }
+    return {
+      success: true,
+    };
   } catch (error) {
     return { success: false, message: formatError(error) };
   }
@@ -109,25 +107,31 @@ export async function addTask(data: z.infer<typeof taskActionSchema>) {
         task: response.task,
         tasksOrder: response.tasksOrder,
       },
-      message: `${response.task.title} task has been deleted successfully`,
     };
   } catch (error) {
     return { success: false, message: formatError(error) };
   }
 }
 
-export async function updateTaskDb(data: z.infer<typeof taskActionSchema>, id: string) {
+export async function updateTaskDb(
+  data: z.infer<typeof taskActionSchema>,
+  id: string
+) {
   try {
-    const validatedTask = updatedTaskActionSchema.parse({...data,id});
-    
+    const validatedTask = updatedTaskActionSchema.parse({ ...data, id });
+
     const updatedTask = await prisma.task.update({
       where: { id: validatedTask.id },
-      data: {title: validatedTask.title,tag: validatedTask.tag,dueDate:validatedTask.dueDate, user: validatedTask.user },
+      data: {
+        title: validatedTask.title,
+        tag: validatedTask.tag,
+        dueDate: validatedTask.dueDate,
+        user: validatedTask.user,
+      },
     });
     return {
       success: true,
       data: updatedTask,
-      message: "Task updated successfully",
     };
   } catch (error) {
     return { success: false, message: formatError(error) };

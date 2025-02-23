@@ -21,7 +21,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
-import { users } from "@/context/KanbanProvider";
 import { defaultAddTask } from "@/lib/constants";
 import { z } from "zod";
 import { addFormTaskSchema } from "@/lib/validators";
@@ -31,31 +30,23 @@ import { addTask, updateTaskDb } from "@/lib/actions/task.action";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 import { useKanbanContext } from "@/hooks/use-context";
-import { Task } from "@/types";
+import { Section, Task, User } from "@/types";
 
 const AddOrUpdateTask = ({
   sectionId,
   text,
   task,
   type,
-  handleOpen
+  handleOpen,
 }: {
   sectionId: string;
   text?: string;
   task?: Task;
   type: "create" | "update";
-  handleOpen?: () => void
+  handleOpen?: () => void;
 }) => {
   const [open, setOpen] = useState(false);
 
-  const {
-    createdAt,
-    id,
-    user,
-    dueDate,
-    sectionId: sam,
-    ...formTask
-  } = task || {};
   const kanbanContext = useKanbanContext();
   if (!kanbanContext) {
     throw new Error("Kanban context is null");
@@ -63,9 +54,19 @@ const AddOrUpdateTask = ({
   const {
     addNewTask,
     updateTask,
+    tempAddNewTask,
+    sections,
+    tasks,
+    users,
+    rollbackState,
   }: {
     addNewTask: (data: { task: Task; tasksOrder: string[] }) => void;
     updateTask: (task: Task) => void;
+    tempAddNewTask: (task: Task) => void;
+    sections: Section[];
+    tasks: Task[];
+    users: User[];
+    rollbackState: (data: { sections: Section[]; tasks: Task[] }) => void;
   } = kanbanContext;
   const { toast } = useToast();
 
@@ -80,7 +81,8 @@ const AddOrUpdateTask = ({
     defaultValues:
       task && type === "update"
         ? {
-            ...formTask,
+            title: task.title,
+            tag: task.tag,
             user: String(task.user.id),
             dueDate: formattedDate(new Date(task.dueDate)),
           }
@@ -101,30 +103,52 @@ const AddOrUpdateTask = ({
       sectionId,
     };
 
+    const tempCreateTaskId = crypto.randomUUID();
+    const prevState = {
+      sections: [...sections],
+      tasks: [...tasks]
+    };
+    if (type === "create") {
+      tempAddNewTask({
+        ...data,
+        id: tempCreateTaskId,
+        createdAt: new Date(),
+      });
+      toast({
+        description: `${data.title} task has been successfully created`,
+      });
+    } else {
+      updateTask({ ...data, id:task?.id } as Task);
+      toast({
+        description: `Task has been successfully updated`,
+      });
+    }
+    setOpen(false);
+    form.reset();
+       // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+    handleOpen && handleOpen();
+
     const res =
       type === "update" && task
         ? await updateTaskDb(data, task.id)
         : await addTask(data);
 
     if (!res.success) {
+      rollbackState(prevState);
       return toast({
         variant: "destructive",
         description: res.message,
       });
     }
-    if (res.data) {
-      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-      type === "update" && task
-        ? updateTask(res.data as Task)
-        : addNewTask(res.data as { task: Task; tasksOrder: string[] });
+    if (res.data && type === "create") {
+      addNewTask(
+        res.data as {
+          task: Task;
+          tasksOrder: string[];
+          tempCreateTaskId: string;
+        }
+      );
     }
-    setOpen(false);
-    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-    handleOpen && handleOpen()
-    form.reset();
-    toast({
-      description: res.message,
-    });
   };
 
   return (

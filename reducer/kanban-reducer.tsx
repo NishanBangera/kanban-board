@@ -5,7 +5,6 @@ interface State {
   tasks: Task[];
   users: User[];
 }
-
 interface Action {
   type: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -15,13 +14,13 @@ interface Action {
 export const kanbanReducer = (state: State, action: Action): State => {
   switch (action.type) {
     case "SET_INITIAL_DATA": {
-      const {sections, tasks} = action.payload
+      const { sections, tasks } = action.payload;
 
       return {
         ...state,
         sections,
-        tasks
-      }
+        tasks,
+      };
     }
 
     case "REORDER_TASK": {
@@ -33,26 +32,42 @@ export const kanbanReducer = (state: State, action: Action): State => {
       };
     }
 
+    case "TEMP_ADD_TASK": {
+      const task = action.payload as Task;
+      return {
+        ...state,
+        tasks: [...state.tasks, task],
+      };
+    }
+
     case "ADD_TASK": {
-      const { task, tasksOrder } = action.payload;
+      const { task, tasksOrder, tempCreateTaskId } = action.payload;
       const modifiedSections = state.sections.map((section) => {
         if (section.id === task.sectionId) {
           return { ...section, tasksOrder };
         }
         return section;
-      }) as Section[];
+      });
+
+      const modifiedTasks = state.tasks.map((item) => {
+        if (item.id === tempCreateTaskId) {
+          return task;
+        }
+        return item;
+      });
       return {
         ...state,
-        tasks: [...state.tasks, task],
+        tasks: modifiedTasks,
         sections: modifiedSections,
       };
     }
 
     case "UPDATE_TASK": {
-      const task = action.payload;
+      const { id, title, tag, dueDate, user } = action.payload as Task;
+
       const modifiedTasks = state.tasks.map((item) => {
-        if (task.id === item.id) {
-          return task;
+        if (id === item.id) {
+          return { ...item, title, tag, dueDate, user };
         }
         return item;
       });
@@ -64,31 +79,50 @@ export const kanbanReducer = (state: State, action: Action): State => {
     }
 
     case "DELETE_TASK": {
-      const { id, data } = action.payload;
-      const filteredTasks = state.tasks.filter((task) => task.id !== id);
-      const modifiedSection = state.sections.map((section) => {
-        if (section.id === data.id) return data;
+      const task = action.payload as Task;
+      const modifySections = state.sections.map((section) => {
+        if (section.id === task.sectionId) {
+          return {
+            ...section,
+            tasksOrder: section.tasksOrder.filter((id) => id !== task.id),
+          };
+        }
         return section;
       });
+      const filteredTasks = state.tasks.filter((item) => item.id !== task.id);
+
       return {
         ...state,
+        sections: modifySections,
         tasks: filteredTasks,
-        sections: modifiedSection,
+      };
+    }
+
+    case "TEMP_ADD_SECTION": {
+      const tempSection = action.payload;
+      return {
+        ...state,
+        sections: [...state.sections, tempSection],
       };
     }
 
     case "ADD_SECTION": {
-      const newSection = action.payload;
-
+      const { tempSectionId, ...newSection } = action.payload;
+      const modifiedSection = state.sections.map((section) => {
+        if (section.id === tempSectionId) {
+          return newSection;
+        }
+        return section;
+      });
       return {
         ...state,
-        sections: [...state.sections, newSection],
+        sections: modifiedSection,
       };
     }
     case "UPDATE_SECTION": {
-      const { id, title } = action.payload;
+      const { title, sectionId } = action.payload;
       const updatedSections = state.sections.map((section) => {
-        if (section.id === id) return { ...section, id, title };
+        if (section.id === sectionId) return { ...section, sectionId, title };
         return section;
       });
       return {
@@ -96,20 +130,31 @@ export const kanbanReducer = (state: State, action: Action): State => {
         sections: updatedSections,
       };
     }
+
     case "DELETE_SECTION": {
-      const id = action.payload;
-      const updatedSection = state.sections.filter(
-        (section) => section.id !== id
+      const sectionId = action.payload;
+      const filteredSections = state.sections.filter(
+        (section) => section.id !== sectionId
       );
-      const updatedTasks = state.tasks.filter(
-        (task: Task) => task.sectionId !== id
+      const filteredTasks = state.tasks.filter(
+        (task) => task.sectionId !== sectionId
       );
+
       return {
         ...state,
-        sections: updatedSection,
-        tasks: updatedTasks,
+        sections: filteredSections,
+        tasks: filteredTasks,
       };
     }
+
+    case "ROLLBACK_STATE": {
+      const data = action.payload;
+      return {
+        ...state,
+        ...data,
+      };
+    }
+
     default:
       return { ...state };
   }
