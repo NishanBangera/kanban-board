@@ -42,10 +42,7 @@ const AddSection = () => {
     tempAddNewSection: (section: Section) => void;
     sections: Section[];
     tasks: Task[];
-    rollbackState: (data: {
-      sections: Section[];
-      tasks: Task[];
-    }) => void;
+    rollbackState: (data: { sections: Section[]; tasks: Task[] }) => void;
   } = kanbanContext;
   const [open, setOpen] = useState(false);
 
@@ -61,7 +58,7 @@ const AddSection = () => {
     const tempSectionId = crypto.randomUUID();
     const prevState = {
       sections: [...sections],
-      tasks: [...tasks]
+      tasks: [...tasks],
     };
     tempAddNewSection({
       ...values,
@@ -77,7 +74,7 @@ const AddSection = () => {
     });
     const res = await addSection(values);
     if (res.success) {
-      addNewSection(res.data!,tempSectionId);
+      addNewSection(res.data!, tempSectionId);
     } else {
       rollbackState(prevState);
       return toast({
@@ -90,10 +87,14 @@ const AddSection = () => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Plus
-          className="w-4 h-4 mt-1 cursor-pointer"
+        <Button
+          variant="link"
+          className="hover:no-underline p-0"
           onClick={() => setOpen(true)}
-        />
+        >
+          <Plus className="w-4 h-4 cursor-pointer text-slate-400" />
+          <h2 className="text-slate-400 text-base">Add Section</h2>
+        </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <Form {...form}>

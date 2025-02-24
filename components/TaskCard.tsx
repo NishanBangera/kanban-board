@@ -54,20 +54,19 @@ const TaskCard = ({ task }: { task: Task }) => {
   }
 
   return (
-    <div className="p-3">
+    <div>
       <Card
         ref={setNodeRef}
         style={style}
         {...attributes}
         {...listeners}
-        className="px-2 py-2"
+        className="p-3"
       >
         <div className="flex justify-between">
           <CardTitle className="text-sm">{task.title}</CardTitle>
           <RemoveOrUpdateTask task={task} sectionId={task.sectionId} />
         </div>
-        <CardContent className="p-2">
-          <div className="flex justify-between items-center">
+        <CardContent className="flex justify-between items-center pt-2 pb-0 px-0">
             <div className="flex space-x-3 items-center">
               <Image
                 className="rounded-full aspect-square object-cover"
@@ -80,10 +79,9 @@ const TaskCard = ({ task }: { task: Task }) => {
                 {formattedDate}
               </p>
             </div>
-            <Badge variant="outline" className="bg-gray-50 border-none">
+            <Badge variant="outline" className="bg-gray-100 border-none">
               <p className="text-slate-400">{task.tag}</p>
             </Badge>
-          </div>
         </CardContent>
       </Card>
     </div>

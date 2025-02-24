@@ -156,12 +156,11 @@ const AddOrUpdateTask = ({
         {type === "update" ? (
           <Button>Update</Button>
         ) : (
-          <Button variant="link" className="hover:no-underline">
+          <Button variant="link" className="hover:no-underline" onClick={() => setOpen(true)}>
             <Plus
               className={`w-4 h-4 cursor-pointer ${
                 text ? "text-slate-400" : ""
               }`}
-              onClick={() => setOpen(true)}
             />
             {text && <p className="text-slate-400">{text}</p>}
           </Button>

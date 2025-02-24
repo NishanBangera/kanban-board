@@ -35,7 +35,7 @@ const Section = ({ section }: { section: SectionType }) => {
 
       <div
         ref={setNodeRef}
-        className="flex flex-1 flex-col rounded-lg bg-gray-100 "
+        className="flex flex-1 flex-col gap-3 p-3 rounded-lg bg-gray-100 "
       >
         <SortableContext items={sectionTaskIds}>
           {sectionTasks.map((task: Task) => (

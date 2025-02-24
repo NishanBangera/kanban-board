@@ -9,9 +9,9 @@ export default function Home() {
       <div className="min-w-max flex justify-center h-full">
         <KanbanProvider>
         <DragAndDrop />
-        <div className="flex space-x-4 py-2 max-h-max">
+        <div className="">
           <AddSection />
-          <p className="text-slate-300 max-h-max">Add section</p>
+          
         </div>
         </KanbanProvider>
       </div>
