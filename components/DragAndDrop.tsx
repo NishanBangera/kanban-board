@@ -44,7 +44,7 @@ const DragAndDrop = () => {
 
   const onDragStart = (event: DragStartEvent) => {
     setActiveTask(event.active.data.current as Task);
-    if (!prevState) setPrevState(tasks);
+    setPrevState(tasks);
   };
   const onDragOver = async (event: DragOverEvent) => {
     const { active, over } = event;
@@ -100,7 +100,6 @@ const DragAndDrop = () => {
         description: res.message,
       });
     }
-    setPrevState(null) // set prevState to null only when we get db response
   };
 
   const sensors = useSensors(
